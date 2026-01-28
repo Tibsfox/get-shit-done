@@ -50,12 +50,12 @@ Plans:
   3. Statusline hook logs render events at TRACE level
   4. Logger modules are bundled correctly by build-hooks.js
   5. install.js registers the session initialization hook in settings.json
-**Plans**: 3 plans
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 02-01: Create gsd-log-init.js session initialization hook
-- [ ] 02-02: Update gsd-check-update.js and gsd-statusline.js with logging
-- [ ] 02-03: Update build-hooks.js to bundle logger and update install.js
+- [ ] 02-01-PLAN.md — Create gsd-log-init.js hook and update build-hooks.js for bundling (Wave 1)
+- [ ] 02-02-PLAN.md — Add logging to gsd-check-update.js and gsd-statusline.js (Wave 1)
+- [ ] 02-03-PLAN.md — Update install.js to register gsd-log-init hook (Wave 2)
 
 ### Phase 3: Agent Instrumentation
 **Goal**: Add logging specifications to all agent markdown files so orchestrators know what to log during agent operations.
@@ -129,7 +129,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/4 | Planned | - |
-| 2. Hook Integration | 0/3 | Not started | - |
+| 2. Hook Integration | 0/3 | Planned | - |
 | 3. Agent Instrumentation | 0/2 | Not started | - |
 | 4. Verification Logging | 0/2 | Not started | - |
 | 5. Workflow Integration | 0/2 | Not started | - |
@@ -152,10 +152,12 @@ Phase 1: Foundation
            v
 Phase 2: Hook Integration
     |
-    +-- hooks/gsd-log-init.js (new)
-    +-- hooks/gsd-check-update.js (updated)
-    +-- hooks/gsd-statusline.js (updated)
-    +-- bin/install.js (updated)
+    +-- hooks/gsd-log-init.js (new) [Wave 1]
+    +-- scripts/build-hooks.js (updated) [Wave 1]
+    +-- hooks/gsd-check-update.js (updated) [Wave 1]
+    +-- hooks/gsd-statusline.js (updated) [Wave 1]
+    |
+    +-- bin/install.js (updated) [Wave 2]
            |
            v
 Phase 3: Agent Instrumentation
