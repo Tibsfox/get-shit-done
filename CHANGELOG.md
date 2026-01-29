@@ -6,6 +6,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **Debug Logging System** — Comprehensive logging for GSD workflows and agents
+  - 6 log levels (OFF/ERROR/WARN/INFO/DEBUG/TRACE) via syslog transport
+  - Configuration precedence: environment > project > global > defaults
+  - Session tracking with unique IDs for log correlation
+  - Workflow orchestrator logging for phase/plan/wave execution
+  - Agent logging specifications for spawn, completion, and checkpoint events
+  - Verification logging patterns with gap detection and re-verification support
+  - Documentation: `references/logging.md` for configuration and troubleshooting
+
 ## [1.9.12] - 2025-01-23
 
 ### Removed
