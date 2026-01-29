@@ -1054,6 +1054,16 @@ Verification logging creates an immutable audit trail for compliance and debuggi
 
 **Querying patterns:** To reconstruct a verification session, filter logs by `agent_id` to see all events in a single session. To see all verifications of a phase across iterations, filter by `phase` identifier. To find incomplete verifications requiring attention, filter by `status=gaps_found`. Sort by timestamp to see progression across re-verification iterations. Use `gaps_closed` and `regressions` fields to track which truths improved or degraded between iterations.
 
+<!--
+Requirements Coverage:
+- VERIFY-01 (R4.1): Verification Start section (phase, plans_count, must_haves_count)
+- VERIFY-02 (R4.2): Artifact Check section (exists, substantive, wired, status)
+- VERIFY-03 (R4.3): Key Link Verification section (from, to, via, status)
+- VERIFY-04 (R4.4): Gap Detection section (truth, status, reason, missing_items)
+- VERIFY-05 (R4.5): Verification Outcome section (status, score, gaps)
+All VERIFY requirements satisfied.
+-->
+
 </logging>
 
 <success_criteria>
