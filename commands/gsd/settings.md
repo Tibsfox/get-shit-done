@@ -1,6 +1,6 @@
 ---
 name: gsd:settings
-description: Configure GSD workflow toggles and model profile
+description: Configure GSD workflow toggles, model profile, and view logging settings
 allowed-tools:
   - Read
   - Write
@@ -34,6 +34,8 @@ Parse current values (default to `true` if not present):
 - `workflow.plan_check` — spawn plan checker during plan-phase
 - `workflow.verifier` — spawn verifier during execute-phase
 - `model_profile` — which model each agent uses (default: `balanced`)
+- `logging.level` — current log level (default: 3/INFO)
+- `logging.syslog.enabled` — whether syslog output is active (default: true)
 
 ## 3. Present Settings
 
@@ -117,6 +119,26 @@ Display:
 | Plan Checker         | {On/Off} |
 | Execution Verifier   | {On/Off} |
 
+**Logging (read-only):**
+
+| Setting        | Value |
+|----------------|-------|
+| Log Level      | {level_name} ({level_number}) |
+| Syslog Output  | {Enabled/Disabled} |
+
+To change logging settings, edit `.planning/config.json`:
+```json
+{
+  "logging": {
+    "level": "debug",
+    "syslog": { "enabled": true }
+  }
+}
+```
+Or set environment variable: `GSD_LOG_LEVEL=4`
+
+See `references/logging.md` for full configuration guide.
+
 These settings apply to future /gsd:plan-phase and /gsd:execute-phase runs.
 
 Quick commands:
@@ -124,6 +146,7 @@ Quick commands:
 - /gsd:plan-phase --research — force research
 - /gsd:plan-phase --skip-research — skip research
 - /gsd:plan-phase --skip-verify — skip plan check
+- GSD_LOG_LEVEL=4 /gsd:... — enable DEBUG logging for one command
 ```
 
 </process>
@@ -133,4 +156,5 @@ Quick commands:
 - [ ] User presented with 4 settings (profile + 3 toggles)
 - [ ] Config updated with model_profile and workflow section
 - [ ] Changes confirmed to user
+- [ ] Logging settings displayed (level, syslog status)
 </success_criteria>
