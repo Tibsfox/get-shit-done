@@ -158,7 +158,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VERIFY-03 | Phase 4 | Complete |
 | VERIFY-04 | Phase 4 | Complete |
 | VERIFY-05 | Phase 4 | Complete |
-| INTEG-05 | Phase 5 | Pending |
+| INTEG-05 | Phase 5 | Complete |
 | DOCS-01 | Phase 6 | Pending |
 | DOCS-02 | Phase 6 | Pending |
 | DOCS-03 | Phase 6 | Pending |
@@ -171,4 +171,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-28*
-*Last updated: 2026-01-28 after initial definition*
+*Last updated: 2026-01-29 after Phase 5 completion*
