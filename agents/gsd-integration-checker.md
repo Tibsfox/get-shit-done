@@ -409,6 +409,144 @@ Return structured report to milestone auditor:
 
 </critical_rules>
 
+<logging>
+
+## Agent Spawn
+
+Log agent spawn at INFO level when orchestrator creates the integration checker via Task().
+
+**Message format:** "Agent spawn: gsd-integration-checker"
+
+**Context metadata:**
+- `agent_id`: Task ID from orchestrator
+- `agent_type`: "gsd-integration-checker"
+- `phases_to_check`: Array of phase numbers being checked for integration
+- `model`: Model being used
+
+**Example:**
+```javascript
+logger.info('Agent spawn: gsd-integration-checker', {
+  agent_id: taskId,
+  agent_type: 'gsd-integration-checker',
+  phases_to_check: [1, 2, 3],
+  model: 'claude-sonnet-4'
+});
+```
+
+## Agent Completion
+
+Log agent completion at INFO level when integration check finishes.
+
+**Message format:** "Agent completion: gsd-integration-checker - {outcome}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `agent_type`: "gsd-integration-checker"
+- `outcome`: "complete" or "blocked"
+- `duration_ms`: Execution time in milliseconds
+- `integrations_checked`: Number of cross-phase integrations verified
+- `issues_found`: Total number of integration issues detected
+- `orphaned_exports`: Count of unused exports
+- `broken_flows`: Count of incomplete E2E flows
+
+**Example:**
+```javascript
+logger.info('Agent completion: gsd-integration-checker - complete', {
+  agent_id: taskId,
+  agent_type: 'gsd-integration-checker',
+  outcome: 'complete',
+  duration_ms: 65000,
+  integrations_checked: 8,
+  issues_found: 2,
+  orphaned_exports: 1,
+  broken_flows: 1
+});
+```
+
+## Integration Checked
+
+Log each integration point verification at DEBUG level.
+
+**Message format:** "Integration checked: {from_phase} -> {to_phase}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `from_phase`: Phase number providing the export/API
+- `to_phase`: Phase number consuming the export/API
+- `integration_point`: What is being integrated (export name, API route, etc.)
+- `status`: "connected", "orphaned", or "missing"
+
+**Example:**
+```javascript
+logger.debug('Integration checked: 1 -> 3', {
+  agent_id: taskId,
+  from_phase: 1,
+  to_phase: 3,
+  integration_point: 'getCurrentUser',
+  status: 'connected'
+});
+```
+
+## Issue Detected
+
+Log integration issues at INFO level when wiring problems are found.
+
+**Message format:** "Issue detected: {integration_point}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `integration_point`: What integration failed (export name, API route, flow name)
+- `severity`: "blocker" or "warning"
+- `issue_type`: "orphaned_export", "missing_connection", "broken_flow", "unprotected_route"
+- `description`: Brief description of the issue
+- `from_phase`: Phase providing (if applicable)
+- `to_phase`: Phase consuming (if applicable)
+
+**Example:**
+```javascript
+logger.info('Issue detected: formatUserData', {
+  agent_id: taskId,
+  integration_point: 'formatUserData',
+  severity: 'warning',
+  issue_type: 'orphaned_export',
+  description: 'Exported from Phase 2 but never imported',
+  from_phase: 2,
+  to_phase: null
+});
+```
+
+## Context Pressure
+
+Log context window pressure at thresholds during integration checking.
+
+**75% threshold (DEBUG):**
+```javascript
+logger.debug('Context pressure: 75%', {
+  agent_id: taskId,
+  agent_type: 'gsd-integration-checker',
+  tokens_used: 150000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  integrations_checked: 5,
+  integrations_remaining: 3
+});
+```
+
+**90% threshold (WARN):**
+```javascript
+logger.warn('Context pressure: 90%', {
+  agent_id: taskId,
+  agent_type: 'gsd-integration-checker',
+  tokens_used: 180000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  integrations_checked: 7,
+  integrations_remaining: 1
+});
+```
+
+</logging>
+
 <success_criteria>
 
 - [ ] Export/import map built from SUMMARYs

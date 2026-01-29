@@ -573,6 +573,142 @@ When unable to proceed:
 
 </anti_patterns>
 
+<logging>
+
+## Agent Spawn
+
+Log agent spawn at INFO level when orchestrator creates the roadmapper via Task().
+
+**Message format:** "Agent spawn: gsd-roadmapper"
+
+**Context metadata:**
+- `agent_id`: Task ID from orchestrator
+- `agent_type`: "gsd-roadmapper"
+- `project_type`: Type of project being mapped
+- `requirements_count`: Number of v1 requirements to map
+- `depth`: Depth setting from config.json (quick/standard/comprehensive)
+- `model`: Model being used
+
+**Example:**
+```javascript
+logger.info('Agent spawn: gsd-roadmapper', {
+  agent_id: taskId,
+  agent_type: 'gsd-roadmapper',
+  project_type: 'web_app',
+  requirements_count: 12,
+  depth: 'standard',
+  model: 'claude-sonnet-4'
+});
+```
+
+## Agent Completion
+
+Log agent completion at INFO level when ROADMAP.md and STATE.md are written.
+
+**Message format:** "Agent completion: gsd-roadmapper - {outcome}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `agent_type`: "gsd-roadmapper"
+- `outcome`: "created", "revised", or "blocked"
+- `duration_ms`: Execution time in milliseconds
+- `phases_created`: Number of phases in roadmap
+- `total_plans`: Estimated number of plans across all phases
+- `coverage`: Percentage of requirements mapped (should be 100)
+
+**Example:**
+```javascript
+logger.info('Agent completion: gsd-roadmapper - created', {
+  agent_id: taskId,
+  agent_type: 'gsd-roadmapper',
+  outcome: 'created',
+  duration_ms: 85000,
+  phases_created: 6,
+  total_plans: 18,
+  coverage: 100
+});
+```
+
+## Phase Defined
+
+Log each phase definition at DEBUG level when deriving phases from requirements.
+
+**Message format:** "Phase defined: {phase_number} - {phase_name}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `phase_number`: Phase number
+- `phase_name`: Phase name
+- `goal`: Phase goal (outcome statement)
+- `requirements_mapped`: Number of requirements assigned to this phase
+- `success_criteria_count`: Number of success criteria derived
+
+**Example:**
+```javascript
+logger.debug('Phase defined: 2 - Authentication', {
+  agent_id: taskId,
+  phase_number: 2,
+  phase_name: 'Authentication',
+  goal: 'Users can securely access their accounts',
+  requirements_mapped: 3,
+  success_criteria_count: 4
+});
+```
+
+## Dependency Resolved
+
+Log phase dependencies at DEBUG level when building dependency graph.
+
+**Message format:** "Dependency resolved: Phase {phase_number}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `phase_number`: Phase number
+- `depends_on`: Array of phase numbers this phase depends on
+- `wave`: Wave number calculated from dependencies
+
+**Example:**
+```javascript
+logger.debug('Dependency resolved: Phase 3', {
+  agent_id: taskId,
+  phase_number: 3,
+  depends_on: [1, 2],
+  wave: 3
+});
+```
+
+## Context Pressure
+
+Log context window pressure at thresholds during roadmap creation.
+
+**75% threshold (DEBUG):**
+```javascript
+logger.debug('Context pressure: 75%', {
+  agent_id: taskId,
+  agent_type: 'gsd-roadmapper',
+  tokens_used: 150000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  phases_defined: 4,
+  phases_remaining: 2
+});
+```
+
+**90% threshold (WARN):**
+```javascript
+logger.warn('Context pressure: 90%', {
+  agent_id: taskId,
+  agent_type: 'gsd-roadmapper',
+  tokens_used: 180000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  phases_defined: 5,
+  phases_remaining: 1
+});
+```
+
+</logging>
+
 <success_criteria>
 
 Roadmap is complete when:

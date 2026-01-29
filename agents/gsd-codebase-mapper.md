@@ -728,6 +728,160 @@ Ready for orchestrator summary.
 
 </critical_rules>
 
+<logging>
+
+## Agent Spawn
+
+Log agent spawn at INFO level when orchestrator creates the codebase mapper via Task().
+
+**Message format:** "Agent spawn: gsd-codebase-mapper"
+
+**Context metadata:**
+- `agent_id`: Task ID from orchestrator
+- `agent_type`: "gsd-codebase-mapper"
+- `codebase_path`: Root path of codebase being mapped
+- `scan_scope`: Focus area (tech/arch/quality/concerns)
+- `model`: Model being used
+
+**Example:**
+```javascript
+logger.info('Agent spawn: gsd-codebase-mapper', {
+  agent_id: taskId,
+  agent_type: 'gsd-codebase-mapper',
+  codebase_path: '/media/foxy/ai/G/gsd/get-shit-done',
+  scan_scope: 'tech',
+  model: 'claude-sonnet-4'
+});
+```
+
+## Agent Completion
+
+Log agent completion at INFO level when all documents for the focus area are written.
+
+**Message format:** "Agent completion: gsd-codebase-mapper - {outcome}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `agent_type`: "gsd-codebase-mapper"
+- `outcome`: "complete" or "blocked"
+- `duration_ms`: Execution time in milliseconds
+- `files_scanned`: Approximate number of files scanned during exploration
+- `documents_created`: Array of document filenames created
+
+**Example:**
+```javascript
+logger.info('Agent completion: gsd-codebase-mapper - complete', {
+  agent_id: taskId,
+  agent_type: 'gsd-codebase-mapper',
+  outcome: 'complete',
+  duration_ms: 95000,
+  files_scanned: 120,
+  documents_created: ['STACK.md', 'INTEGRATIONS.md']
+});
+```
+
+## Document Created
+
+Log each document creation at DEBUG level when writing analysis files.
+
+**Message format:** "Document created: {document_type}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `document_type`: Type of document (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS)
+- `path`: Full path to created document
+- `lines`: Approximate line count of document
+- `sections_populated`: Number of template sections filled
+
+**Example:**
+```javascript
+logger.debug('Document created: STACK', {
+  agent_id: taskId,
+  document_type: 'STACK',
+  path: '.planning/codebase/STACK.md',
+  lines: 85,
+  sections_populated: 7
+});
+```
+
+## Pattern Detected
+
+Log significant patterns detected at DEBUG level during codebase exploration.
+
+**Message format:** "Pattern detected: {pattern_type}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `pattern_type`: Type of pattern (naming_convention, architecture_pattern, test_pattern, etc.)
+- `location`: File or directory where pattern was detected
+- `confidence`: HIGH, MEDIUM, or LOW based on how consistently pattern appears
+
+**Example:**
+```javascript
+logger.debug('Pattern detected: camelCase_functions', {
+  agent_id: taskId,
+  pattern_type: 'naming_convention',
+  location: 'src/**/*.ts',
+  confidence: 'HIGH'
+});
+```
+
+## Concern Flagged
+
+Log concerns detected at INFO level during concerns focus exploration.
+
+**Message format:** "Concern flagged: {concern_type}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `concern_type`: Type of concern (tech_debt, security, performance, fragility, etc.)
+- `severity`: "critical", "moderate", or "minor"
+- `location`: File paths where concern was found
+- `description`: Brief description of the concern
+
+**Example:**
+```javascript
+logger.info('Concern flagged: security', {
+  agent_id: taskId,
+  concern_type: 'security',
+  severity: 'critical',
+  location: 'src/api/auth.ts:45',
+  description: 'Password stored without hashing'
+});
+```
+
+## Context Pressure
+
+Log context window pressure at thresholds during codebase mapping.
+
+**75% threshold (DEBUG):**
+```javascript
+logger.debug('Context pressure: 75%', {
+  agent_id: taskId,
+  agent_type: 'gsd-codebase-mapper',
+  tokens_used: 150000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  files_scanned: 80,
+  documents_completed: 1
+});
+```
+
+**90% threshold (WARN):**
+```javascript
+logger.warn('Context pressure: 90%', {
+  agent_id: taskId,
+  agent_type: 'gsd-codebase-mapper',
+  tokens_used: 180000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  files_scanned: 120,
+  documents_completed: 2
+});
+```
+
+</logging>
+
 <success_criteria>
 - [ ] Focus area parsed correctly
 - [ ] Codebase explored thoroughly for focus area
