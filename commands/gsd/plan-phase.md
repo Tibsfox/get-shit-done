@@ -509,6 +509,209 @@ Verification: {Passed | Passed with override | Skipped}
 ───────────────────────────────────────────────────────────────
 </offer_next>
 
+<logging>
+
+## Logging Specifications for Orchestrator
+
+The orchestrator should log the following coordination events during research and planning workflow:
+
+### 1. Research Check (DEBUG level)
+
+Log decision about whether research is needed before planning.
+
+**Message format:** "Research check"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `research_exists`: Boolean - whether RESEARCH.md file exists
+- `force_research`: Boolean - whether --research flag was set
+- `decision`: "spawn_researcher" | "skip_to_planning"
+
+**Example code:**
+
+```javascript
+logger.debug('Research check', {
+  phase: phaseNumber,
+  research_exists: researchFileExists,
+  force_research: hasResearchFlag,
+  decision: needsResearch ? 'spawn_researcher' : 'skip_to_planning'
+});
+```
+
+### 2. Research Start (INFO level)
+
+Log when spawning the researcher agent.
+
+**Message format:** "Research start"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `mode`: "forced" | "automatic"
+
+**Example code:**
+
+```javascript
+logger.info('Research start', {
+  phase: phaseNumber,
+  mode: hasResearchFlag ? 'forced' : 'automatic'
+});
+```
+
+### 3. Subagent Spawn (DEBUG level)
+
+Log when spawning researcher, planner, or checker agents.
+
+**Message format:** "Subagent spawn"
+
+**Context to include:**
+- `agent_type`: "gsd-phase-researcher" | "gsd-planner" | "gsd-plan-checker"
+- `phase`: Phase identifier
+- `model`: Claude model being used
+
+**Example code:**
+
+```javascript
+logger.debug('Subagent spawn', {
+  agent_type: 'gsd-phase-researcher',
+  phase: phaseNumber,
+  model: researcherModel
+});
+```
+
+### 4. Research Complete (INFO level)
+
+Log when researcher returns with findings.
+
+**Message format:** "Research complete"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `duration_ms`: Time from spawn to completion in milliseconds
+- `outcome`: "complete" | "blocked" | "inconclusive"
+- `confidence`: Research confidence level if available
+
+**Example code:**
+
+```javascript
+logger.info('Research complete', {
+  phase: phaseNumber,
+  duration_ms: researchEndTime - researchStartTime,
+  outcome: researchResult.status,
+  confidence: researchResult.confidence
+});
+```
+
+### 5. Planning Start (INFO level)
+
+Log when spawning the planner agent.
+
+**Message format:** "Planning start"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `mode`: "standard" | "gap_closure" | "revision"
+- `research_available`: Boolean - whether RESEARCH.md exists
+
+**Example code:**
+
+```javascript
+logger.info('Planning start', {
+  phase: phaseNumber,
+  mode: isGapClosure ? 'gap_closure' : 'standard',
+  research_available: researchFileExists
+});
+```
+
+### 6. Planning Complete (INFO level)
+
+Log when planner returns successfully with plans.
+
+**Message format:** "Planning complete"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `duration_ms`: Time from spawn to completion
+- `plans_created`: Number of PLAN.md files created
+- `waves_count`: Number of waves in phase
+
+**Example code:**
+
+```javascript
+logger.info('Planning complete', {
+  phase: phaseNumber,
+  duration_ms: planningEndTime - planningStartTime,
+  plans_created: planFiles.length,
+  waves_count: maxWave
+});
+```
+
+### 7. Verification Start (DEBUG level)
+
+Log when spawning plan-checker for verification loop.
+
+**Message format:** "Subagent spawn"
+
+**Context to include:**
+- `agent_type`: "gsd-plan-checker"
+- `phase`: Phase identifier
+- `iteration`: Iteration number in revision loop (1 for initial check)
+
+**Example code:**
+
+```javascript
+logger.debug('Subagent spawn', {
+  agent_type: 'gsd-plan-checker',
+  phase: phaseNumber,
+  iteration: iterationCount
+});
+```
+
+### 8. Verification Result (INFO level)
+
+Log checker outcome after verification completes.
+
+**Message format:** "Verification result"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `iteration`: Current iteration number
+- `status`: "passed" | "issues_found"
+- `issues_count`: Number of issues found (0 if passed)
+
+**Example code:**
+
+```javascript
+logger.info('Verification result', {
+  phase: phaseNumber,
+  iteration: iterationCount,
+  status: issuesFound.length > 0 ? 'issues_found' : 'passed',
+  issues_count: issuesFound.length
+});
+```
+
+### 9. Revision Loop (DEBUG level)
+
+Log when sending plans back to planner for revision.
+
+**Message format:** "Revision loop"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `iteration`: Current iteration number (2 or 3)
+- `issues_to_address`: Number of issues being addressed
+
+**Example code:**
+
+```javascript
+logger.debug('Revision loop', {
+  phase: phaseNumber,
+  iteration: iterationCount,
+  issues_to_address: issuesFound.length
+});
+```
+
+</logging>
+
 <success_criteria>
 - [ ] .planning/ directory validated
 - [ ] Phase validated against roadmap
