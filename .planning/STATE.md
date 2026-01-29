@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-01-29 — Completed 01-02-PLAN.md (syslog transport)
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-01-29 — Completed 01-04-PLAN.md (logger core)
 
-Progress: [███░░░░░░░] 19%
+Progress: [████░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 2 min 50 sec
-- Total execution time: 0.14 hours
+- Total plans completed: 4
+- Average duration: 2 min 47 sec
+- Total execution time: 0.19 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 3 | 8 min 33 sec | 2 min 51 sec |
+| 01-foundation | 4 | 11 min 14 sec | 2 min 49 sec |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3 min), 01-03 (2 min), 01-02 (3 min 33 sec)
-- Trend: Consistent velocity
+- Last 5 plans: 01-01 (3 min), 01-03 (2 min 11 sec), 01-02 (3 min 33 sec), 01-04 (2 min 41 sec)
+- Trend: Consistent velocity (sub-3 minute average)
 
 *Updated after each plan completion*
 
@@ -55,6 +55,10 @@ Recent decisions affecting current work:
 - [01-03]: Use process.hrtime.bigint() for nanosecond-precision timing
 - [01-03]: Implement percentile calculation with linear interpolation
 - [01-03]: Provide both class-based and functional APIs for flexibility
+- [01-04]: Logger is singleton by default via getLogger() for session consistency
+- [01-04]: Level 0 (OFF) short-circuits before any syslog work for zero overhead
+- [01-04]: Child loggers inherit session ID but have independent categories
+- [01-04]: Task 2 merged into Task 1 for logical completeness of Logger class
 
 ### Pending Todos
 
@@ -66,6 +70,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-29 04:07
-Stopped at: Completed 01-02-PLAN.md (syslog transport)
+Last session: 2026-01-29 04:12
+Stopped at: Completed 01-04-PLAN.md (logger core) - Phase 01 complete
 Resume file: None
