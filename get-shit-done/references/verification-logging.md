@@ -262,3 +262,111 @@ logger.debug(`Key link check: ${path.basename(componentPath)} -> ${apiPath}`, {
 | `partial` | Call exists but incomplete | Response not used |
 
 </key_link_verification>
+
+<re_verification>
+## Re-Verification Logging
+
+When verifying after gap closure, include iteration context to track progress.
+
+### Re-Verification Start
+
+```javascript
+// Pattern: Log re-verification start
+const previousVerification = parseYAML(previousVerificationMd);
+const isReVerification = previousVerification?.gaps?.length > 0;
+
+logger.info('Verification start', {
+  phase: phaseId,
+  plans_count: plans.length,
+  must_haves_count: mustHaves.truths.length + mustHaves.artifacts.length + mustHaves.key_links.length,
+  mode: isReVerification ? 're-verification' : 'initial',
+  // Re-verification context
+  previous_status: isReVerification ? previousVerification.status : null,
+  previous_gaps_count: isReVerification ? previousVerification.gaps.length : 0,
+  iteration: isReVerification ? getIterationNumber(phaseId) : 1
+});
+```
+
+### Re-Verification Progress
+
+```javascript
+// Pattern: Log iteration progress
+const closedGaps = previousGaps.filter(g => !currentGaps.some(c => c.truth === g.truth));
+const regressions = currentGaps.filter(g => previousVerified.includes(g.truth));
+
+logger.info('Re-verification progress', {
+  iteration: iterationNumber,
+  gaps_closed: closedGaps.map(g => g.truth),
+  gaps_remaining: currentGaps.length,
+  regressions: regressions.map(g => g.truth),
+  progression: closedGaps.length > regressions.length ? 'improving' :
+               closedGaps.length === regressions.length ? 'static' : 'regressing'
+});
+```
+
+### Progress Values
+
+| Progression | Meaning | Action |
+|-------------|---------|--------|
+| `improving` | More gaps closed than new issues | Continue |
+| `static` | Same number of issues | Review approach |
+| `regressing` | New issues appearing | Stop, diagnose root cause |
+
+</re_verification>
+
+<querying_patterns>
+## Log Querying Patterns
+
+Use these journalctl patterns to analyze verification logs:
+
+### Single Verification Session
+
+```bash
+# Find all logs from a specific verification
+journalctl -t gsd --grep="agent_id.*abc123" --since="1 hour ago"
+```
+
+### All Verifications for Phase
+
+```bash
+# Find all verifications of a phase
+journalctl -t gsd --grep="phase.*04-verification" --grep="Verification"
+```
+
+### Find All Gaps
+
+```bash
+# Find all gap detection events
+journalctl -t gsd --grep="Gap detected"
+```
+
+### Verification Failures
+
+```bash
+# Find failed verifications
+journalctl -t gsd --grep="Verification outcome.*gaps_found"
+```
+
+### Re-Verification Progress
+
+```bash
+# Track verification iterations
+journalctl -t gsd --grep="Re-verification progress"
+```
+
+</querying_patterns>
+
+<cross_reference>
+## Cross-References
+
+**Agent-specific logging specs:**
+- `@agents/gsd-verifier.md` `<logging>` section - Agent lifecycle and verification events
+
+**Verification logic:**
+- `@get-shit-done/references/verification-patterns.md` - Stub detection, wiring checks, artifact types
+
+**Gap closure workflow:**
+- `/gsd:plan-phase --gaps` - Creates plans from verification gaps
+- VERIFICATION.md frontmatter `gaps:` array - Structured gap data for planner
+
+</cross_reference>
