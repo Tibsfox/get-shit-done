@@ -34,11 +34,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Verification Results
 
-- [ ] **VERIFY-01**: Log verification start with phase, plan count, must-haves count
-- [ ] **VERIFY-02**: Log artifact checks at level 4+ (exists, substantive, wired)
-- [ ] **VERIFY-03**: Log key link verification results (wired, orphaned, partial)
-- [ ] **VERIFY-04**: Log gap detection with truth, status, and missing items
-- [ ] **VERIFY-05**: Log overall verification outcome (passed, gaps_found, human_needed)
+- [x] **VERIFY-01**: Log verification start with phase, plan count, must-haves count
+- [x] **VERIFY-02**: Log artifact checks at level 4+ (exists, substantive, wired)
+- [x] **VERIFY-03**: Log key link verification results (wired, orphaned, partial)
+- [x] **VERIFY-04**: Log gap detection with truth, status, and missing items
+- [x] **VERIFY-05**: Log overall verification outcome (passed, gaps_found, human_needed)
 
 ### Syslog Integration
 
@@ -153,11 +153,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AGENT-04 | Phase 3 | Complete |
 | AGENT-05 | Phase 3 | Complete |
 | INTEG-04 | Phase 3 | Complete |
-| VERIFY-01 | Phase 4 | Pending |
-| VERIFY-02 | Phase 4 | Pending |
-| VERIFY-03 | Phase 4 | Pending |
-| VERIFY-04 | Phase 4 | Pending |
-| VERIFY-05 | Phase 4 | Pending |
+| VERIFY-01 | Phase 4 | Complete |
+| VERIFY-02 | Phase 4 | Complete |
+| VERIFY-03 | Phase 4 | Complete |
+| VERIFY-04 | Phase 4 | Complete |
+| VERIFY-05 | Phase 4 | Complete |
 | INTEG-05 | Phase 5 | Pending |
 | DOCS-01 | Phase 6 | Pending |
 | DOCS-02 | Phase 6 | Pending |
