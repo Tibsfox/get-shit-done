@@ -119,8 +119,8 @@ Plans:
 **Plans**: 2 plans in 1 wave
 
 Plans:
-- [ ] 06-01-PLAN.md — Create references/logging.md and CHANGELOG entry (Wave 1)
-- [ ] 06-02-PLAN.md — Update /gsd:settings with logging display (Wave 1)
+- [x] 06-01-PLAN.md — Create references/logging.md and CHANGELOG entry (Wave 1)
+- [x] 06-02-PLAN.md — Update /gsd:settings with logging display (Wave 1)
 
 ## Progress
 
@@ -134,7 +134,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Agent Instrumentation | 2/2 | Complete | 2026-01-29 |
 | 4. Verification Logging | 2/2 | Complete | 2026-01-29 |
 | 5. Workflow Integration | 3/3 | Complete | 2026-01-29 |
-| 6. Documentation | 0/2 | Not started | - |
+| 6. Documentation | 2/2 | Complete | 2026-01-29 |
 
 ---
 

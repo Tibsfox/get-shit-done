@@ -75,10 +75,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Documentation
 
-- [ ] **DOCS-01**: Logging reference guide (references/logging.md)
-- [ ] **DOCS-02**: Add logging section to /gsd:settings output
-- [ ] **DOCS-03**: Troubleshooting guide with log analysis examples
-- [ ] **DOCS-04**: Update CHANGELOG with logging feature
+- [x] **DOCS-01**: Logging reference guide (references/logging.md)
+- [x] **DOCS-02**: Add logging section to /gsd:settings output
+- [x] **DOCS-03**: Troubleshooting guide with log analysis examples
+- [x] **DOCS-04**: Update CHANGELOG with logging feature
 
 ## v2 Requirements
 
@@ -159,10 +159,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VERIFY-04 | Phase 4 | Complete |
 | VERIFY-05 | Phase 4 | Complete |
 | INTEG-05 | Phase 5 | Complete |
-| DOCS-01 | Phase 6 | Pending |
-| DOCS-02 | Phase 6 | Pending |
-| DOCS-03 | Phase 6 | Pending |
-| DOCS-04 | Phase 6 | Pending |
+| DOCS-01 | Phase 6 | Complete |
+| DOCS-02 | Phase 6 | Complete |
+| DOCS-03 | Phase 6 | Complete |
+| DOCS-04 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 44 total
