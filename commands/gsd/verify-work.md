@@ -207,176 +207,201 @@ Review the issues above and either:
 
 <logging>
 
-## Log Events
+## Logging Specifications for Orchestrator
 
-UAT sessions track test progress and automated gap closure workflow. Use appropriate levels for visibility to verification users.
+UAT sessions track test progress and automated gap closure workflow. Log key events for verification audit trail and debugging UAT issues.
 
-### 1. UAT Session Start
+### 1. UAT Session Start (INFO level)
 
-**Level:** INFO (3)
-**When:** UAT session begins
-**Purpose:** Record verification session lifecycle for audit trail
+Log when UAT session begins to record verification session lifecycle for audit trail.
 
-**Message Format:**
-```
-UAT session started for phase {phase}: {N} tests
-```
+**Message format:** "UAT session started for phase {phase}: {N} tests"
 
-**Context:**
+**Context to include:**
+- `event`: "uat.session_start"
+- `phase`: Phase identifier (e.g., "04-verification-logging")
+- `tests_total`: Number of tests to execute
+- `session_id`: Unique session identifier (e.g., "uat-04-20260129-084523")
+- `resume`: Whether resuming existing session (boolean)
+
+**Example code:**
+
 ```javascript
-{
-  event: "uat.session_start",
-  phase: "04-verification-logging",
-  tests_total: 12,
-  session_id: "uat-04-20260129-084523",
+logger.info(`UAT session started for phase ${phase}: ${testsTotal} tests`, {
+  event: 'uat.session_start',
+  phase: phase,
+  tests_total: testsTotal,
+  session_id: sessionId,
   resume: false
-}
+});
 ```
 
-### 2. Test Present
+### 2. Test Present (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Presenting individual test to user
-**Purpose:** Track granular test progression for debugging UAT issues
+Log when presenting individual test to user to track granular test progression for debugging UAT issues.
 
-**Message Format:**
-```
-Presenting test {N}/{total}: {test_id}
-```
+**Message format:** "Presenting test {N}/{total}: {test_id}"
 
-**Context:**
+**Context to include:**
+- `event`: "uat.test_present"
+- `session_id`: Session identifier
+- `test_number`: Current test number
+- `test_total`: Total test count
+- `test_id`: Test identifier
+- `expected_behavior`: Expected behavior description
+
+**Example code:**
+
 ```javascript
-{
-  event: "uat.test_present",
-  session_id: "uat-04-20260129-084523",
-  test_number: 3,
-  test_total: 12,
-  test_id: "verify-logger-initialization",
-  expected_behavior: "Logger initializes with correct defaults"
-}
+logger.debug(`Presenting test ${testNumber}/${testTotal}: ${testId}`, {
+  event: 'uat.test_present',
+  session_id: sessionId,
+  test_number: testNumber,
+  test_total: testTotal,
+  test_id: testId,
+  expected_behavior: expectedBehavior
+});
 ```
 
-### 3. Test Result
+### 3. Test Result (INFO level)
 
-**Level:** INFO (3)
-**When:** User provides test result (pass/fail)
-**Purpose:** Permanent record of verification outcomes
+Log when user provides test result to create permanent record of verification outcomes.
 
-**Message Format:**
-```
-Test {N} {status}: {test_id} [{severity if fail}]
-```
+**Message format:** "Test {N} {status}: {test_id} [{severity if fail}]"
 
-**Context:**
+**Context to include:**
+- `event`: "uat.test_result"
+- `session_id`: Session identifier
+- `test_number`: Test number
+- `test_id`: Test identifier
+- `status`: "pass" or "fail"
+- `severity`: (if fail) "critical", "high", "medium", or "low"
+- `issue`: (if fail) Issue description
+
+**Example code:**
+
 ```javascript
 // Pass
-{
-  event: "uat.test_result",
-  session_id: "uat-04-20260129-084523",
-  test_number: 3,
-  test_id: "verify-logger-initialization",
-  status: "pass"
-}
+logger.info(`Test ${testNumber} pass: ${testId}`, {
+  event: 'uat.test_result',
+  session_id: sessionId,
+  test_number: testNumber,
+  test_id: testId,
+  status: 'pass'
+});
 
 // Fail
-{
-  event: "uat.test_result",
-  session_id: "uat-04-20260129-084523",
-  test_number: 5,
-  test_id: "verify-syslog-transport",
-  status: "fail",
-  severity: "critical",
-  issue: "Messages not appearing in journal"
-}
+logger.info(`Test ${testNumber} fail: ${testId} [${severity}]`, {
+  event: 'uat.test_result',
+  session_id: sessionId,
+  test_number: testNumber,
+  test_id: testId,
+  status: 'fail',
+  severity: 'critical',
+  issue: issueDescription
+});
 ```
 
-### 4. UAT Checkpoint
+### 4. UAT Checkpoint (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Batched writes to UAT.md (every 5 tests or on issue)
-**Purpose:** Track checkpoint frequency for debugging UAT persistence
+Log batched writes to UAT.md to track checkpoint frequency for debugging UAT persistence.
 
-**Message Format:**
-```
-UAT checkpoint: {completed}/{remaining} tests
-```
+**Message format:** "UAT checkpoint: {completed}/{remaining} tests"
 
-**Context:**
+**Context to include:**
+- `event`: "uat.checkpoint"
+- `session_id`: Session identifier
+- `tests_completed`: Number of tests completed
+- `tests_remaining`: Number of tests remaining
+
+**Example code:**
+
 ```javascript
-{
-  event: "uat.checkpoint",
-  session_id: "uat-04-20260129-084523",
-  tests_completed: 5,
-  tests_remaining: 7
-}
+logger.debug(`UAT checkpoint: ${testsCompleted}/${testsRemaining} tests`, {
+  event: 'uat.checkpoint',
+  session_id: sessionId,
+  tests_completed: testsCompleted,
+  tests_remaining: testsRemaining
+});
 ```
 
-### 5. Debug Agent Spawn
+### 5. Debug Agent Spawn (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Spawning gsd-debugger for issue diagnosis
-**Purpose:** Track parallel debug agents for correlation
+Log when spawning gsd-debugger for issue diagnosis to track parallel debug agents for correlation.
 
-**Message Format:**
-```
-Spawning debug agent for issue {issue_id}
-```
+**Message format:** "Spawning debug agent for issue {issue_id}"
 
-**Context:**
+**Context to include:**
+- `event`: "agent.spawn"
+- `agent_type`: "gsd-debugger"
+- `session_id`: Session identifier
+- `issue_id`: Issue identifier
+- `model`: Claude model being used
+
+**Example code:**
+
 ```javascript
-{
-  event: "agent.spawn",
-  agent_type: "gsd-debugger",
-  session_id: "uat-04-20260129-084523",
-  issue_id: "verify-syslog-transport",
-  model: "claude-sonnet-4-5-20250929"
-}
+logger.debug(`Spawning debug agent for issue ${issueId}`, {
+  event: 'agent.spawn',
+  agent_type: 'gsd-debugger',
+  session_id: sessionId,
+  issue_id: issueId,
+  model: debuggerModel
+});
 ```
 
-### 6. Planner Spawn
+### 6. Planner Agent Spawn (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Spawning gsd-planner in gap closure mode
-**Purpose:** Track gap closure workflow automation
+Log when spawning gsd-planner in gap closure mode to track gap closure workflow automation.
 
-**Message Format:**
-```
-Spawning planner for phase {phase} gap closure
-```
+**Message format:** "Spawning planner for phase {phase} gap closure"
 
-**Context:**
+**Context to include:**
+- `event`: "agent.spawn"
+- `agent_type`: "gsd-planner"
+- `phase`: Phase identifier
+- `mode`: "gap_closure"
+
+**Example code:**
+
 ```javascript
-{
-  event: "agent.spawn",
-  agent_type: "gsd-planner",
-  phase: "04-verification-logging",
-  mode: "gap_closure"
-}
+logger.debug(`Spawning planner for phase ${phase} gap closure`, {
+  event: 'agent.spawn',
+  agent_type: 'gsd-planner',
+  phase: phase,
+  mode: 'gap_closure'
+});
 ```
 
-### 7. UAT Session Complete
+### 7. UAT Session Complete (INFO level)
 
-**Level:** INFO (3)
-**When:** All tests completed and results committed
-**Purpose:** Record verification session completion and overall results
+Log when all tests completed and results committed to record verification session completion and overall results.
 
-**Message Format:**
-```
-UAT session complete for phase {phase}: {passed}/{total} passed [{N} critical issues]
-```
+**Message format:** "UAT session complete for phase {phase}: {passed}/{total} passed [{N} critical issues]"
 
-**Context:**
+**Context to include:**
+- `event`: "uat.session_complete"
+- `phase`: Phase identifier
+- `session_id`: Session identifier
+- `duration_ms`: Session duration in milliseconds
+- `tests_total`: Total test count
+- `tests_passed`: Number of passed tests
+- `tests_failed`: Number of failed tests
+- `critical_issues`: Number of critical severity issues
+
+**Example code:**
+
 ```javascript
-{
-  event: "uat.session_complete",
-  phase: "04-verification-logging",
-  session_id: "uat-04-20260129-084523",
-  duration_ms: 1247000,
-  tests_total: 12,
-  tests_passed: 10,
-  tests_failed: 2,
-  critical_issues: 1
-}
+logger.info(`UAT session complete for phase ${phase}: ${testsPassed}/${testsTotal} passed [${criticalIssues} critical issues]`, {
+  event: 'uat.session_complete',
+  phase: phase,
+  session_id: sessionId,
+  duration_ms: duration,
+  tests_total: testsTotal,
+  tests_passed: testsPassed,
+  tests_failed: testsFailed,
+  critical_issues: criticalIssues
+});
 ```
 
 </logging>

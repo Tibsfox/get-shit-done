@@ -162,126 +162,139 @@ Task(
 
 <logging>
 
-## Log Events
+## Logging Specifications for Orchestrator
 
-Debug sessions track investigation lifecycle from symptom gathering through root cause diagnosis. Log key events for debugging the debugger and audit trail.
+Debug sessions track investigation lifecycle from symptom gathering through root cause diagnosis. Log key events for debugging the debugger and creating audit trail.
 
-### 1. Debug Session Start
+### 1. Debug Session Start (INFO level)
 
-**Level:** INFO (3)
-**When:** Debug session begins (new or resumed)
-**Purpose:** Record investigation lifecycle for tracking active debugging work
+Log when debug session begins (new or resumed) to record investigation lifecycle for tracking active debugging work.
 
-**Message Format:**
-```
-Debug session started: {issue_slug} ({active_sessions_count} active)
-```
+**Message format:** "Debug session started: {issue_slug} ({active_sessions_count} active)"
 
-**Context:**
+**Context to include:**
+- `event`: "debug.session_start"
+- `session_id`: Unique session identifier (e.g., "debug-auth-timeout-20260129")
+- `issue_slug`: Issue slug identifier
+- `trigger`: Brief issue description
+- `active_sessions_count`: Number of active debug sessions
+
+**Example code:**
+
 ```javascript
-{
-  event: "debug.session_start",
-  session_id: "debug-auth-timeout-20260129",
-  issue_slug: "auth-timeout-on-refresh",
-  trigger: "Token refresh fails with 401 after 15 minutes",
-  active_sessions_count: 2
-}
+logger.info(`Debug session started: ${issueSlug} (${activeSessionsCount} active)`, {
+  event: 'debug.session_start',
+  session_id: sessionId,
+  issue_slug: issueSlug,
+  trigger: triggerDescription,
+  active_sessions_count: activeSessionsCount
+});
 ```
 
-### 2. Symptom Gathering
+### 2. Symptom Gathering (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Each symptom question answered
-**Purpose:** Track symptom collection completeness
+Log when each symptom question is answered to track symptom collection completeness.
 
-**Message Format:**
-```
-Symptom gathered: {symptom_type}
-```
+**Message format:** "Symptom gathered: {symptom_type}"
 
-**Context:**
+**Context to include:**
+- `event`: "debug.symptom_gathered"
+- `session_id`: Session identifier
+- `symptom_type`: Type of symptom (e.g., "expected_behavior", "actual_behavior", "errors")
+- `response_received`: Whether response was received (boolean)
+
+**Example code:**
+
 ```javascript
-{
-  event: "debug.symptom_gathered",
-  session_id: "debug-auth-timeout-20260129",
-  symptom_type: "expected_behavior",
+logger.debug(`Symptom gathered: ${symptomType}`, {
+  event: 'debug.symptom_gathered',
+  session_id: sessionId,
+  symptom_type: symptomType,
   response_received: true
-}
+});
 ```
 
-### 3. Debugger Spawn
+### 3. Debugger Spawn (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Spawning gsd-debugger agent (initial or continuation)
-**Purpose:** Track debugger agent spawning for correlation
+Log when spawning gsd-debugger agent (initial or continuation) to track debugger agent spawning for correlation.
 
-**Message Format:**
-```
-Spawning debugger agent [{mode}]: {session_id}
-```
+**Message format:** "Spawning debugger agent [{mode}]: {session_id}"
 
-**Context:**
+**Context to include:**
+- `event`: "agent.spawn"
+- `agent_type`: "gsd-debugger"
+- `session_id`: Session identifier
+- `model`: Claude model being used
+- `mode`: "initial" or "continuation"
+
+**Example code:**
+
 ```javascript
-{
-  event: "agent.spawn",
-  agent_type: "gsd-debugger",
-  session_id: "debug-auth-timeout-20260129",
-  model: "claude-sonnet-4-5-20250929",
-  mode: "initial"  // or "continuation"
-}
+logger.debug(`Spawning debugger agent [${mode}]: ${sessionId}`, {
+  event: 'agent.spawn',
+  agent_type: 'gsd-debugger',
+  session_id: sessionId,
+  model: debuggerModel,
+  mode: mode
+});
 ```
 
-### 4. Checkpoint Handling
+### 4. Checkpoint Handling (INFO level)
 
-**Level:** INFO (3)
-**When:** Debugger agent returns checkpoint requiring user action
-**Purpose:** Track user interaction points in debugging workflow
+Log when debugger agent returns checkpoint requiring user action to track user interaction points in debugging workflow.
 
-**Message Format:**
-```
-Debug checkpoint reached: {checkpoint_type}
-```
+**Message format:** "Debug checkpoint reached: {checkpoint_type}"
 
-**Context:**
+**Context to include:**
+- `event`: "debug.checkpoint"
+- `session_id`: Session identifier
+- `checkpoint_type`: Type of checkpoint (e.g., "human-verify", "decision")
+- `awaiting`: Description of what's needed from user
+
+**Example code:**
+
 ```javascript
-{
-  event: "debug.checkpoint",
-  session_id: "debug-auth-timeout-20260129",
-  checkpoint_type: "human-verify",
-  awaiting: "Reproduce auth timeout with network inspector open"
-}
+logger.info(`Debug checkpoint reached: ${checkpointType}`, {
+  event: 'debug.checkpoint',
+  session_id: sessionId,
+  checkpoint_type: checkpointType,
+  awaiting: awaitingDescription
+});
 ```
 
-### 5. Investigation Outcome
+### 5. Investigation Outcome (INFO level)
 
-**Level:** INFO (3)
-**When:** Investigation completes (root cause found or inconclusive)
-**Purpose:** Record investigation results for audit trail
+Log when investigation completes to record investigation results for audit trail.
 
-**Message Format:**
-```
-Debug session {outcome}: {session_id} [{hypotheses_tested} hypotheses tested]
-```
+**Message format:** "Debug session {outcome}: {session_id} [{hypotheses_tested} hypotheses tested]"
 
-**Context:**
+**Context to include:**
+- `event`: "debug.investigation_complete"
+- `session_id`: Session identifier
+- `outcome`: "root_cause_found" or "inconclusive"
+- `duration_ms`: Investigation duration in milliseconds
+- `hypotheses_tested`: Number of hypotheses tested
+
+**Example code:**
+
 ```javascript
 // Root cause found
-{
-  event: "debug.investigation_complete",
-  session_id: "debug-auth-timeout-20260129",
-  outcome: "root_cause_found",
-  duration_ms: 892000,
-  hypotheses_tested: 4
-}
+logger.info(`Debug session root_cause_found: ${sessionId} [${hypothesesTested} hypotheses tested]`, {
+  event: 'debug.investigation_complete',
+  session_id: sessionId,
+  outcome: 'root_cause_found',
+  duration_ms: duration,
+  hypotheses_tested: hypothesesTested
+});
 
 // Inconclusive
-{
-  event: "debug.investigation_complete",
-  session_id: "debug-auth-timeout-20260129",
-  outcome: "inconclusive",
-  duration_ms: 1456000,
-  hypotheses_tested: 7
-}
+logger.info(`Debug session inconclusive: ${sessionId} [${hypothesesTested} hypotheses tested]`, {
+  event: 'debug.investigation_complete',
+  session_id: sessionId,
+  outcome: 'inconclusive',
+  duration_ms: duration,
+  hypotheses_tested: hypothesesTested
+});
 ```
 
 </logging>
