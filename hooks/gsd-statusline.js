@@ -6,6 +6,15 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+// Import logger for trace-level debugging
+let logger = null;
+try {
+  const { getLogger } = require('../lib');
+  logger = getLogger();
+} catch (e) {
+  // Logger not available - continue without logging
+}
+
 // Read JSON from stdin
 let input = '';
 process.stdin.setEncoding('utf8');
@@ -69,6 +78,19 @@ process.stdin.on('end', () => {
           gsdUpdate = '\x1b[33m⬆ /gsd:update\x1b[0m │ ';
         }
       } catch (e) {}
+    }
+
+    // TRACE level logging (level 5) - only when debugging
+    // Check explicitly to avoid any overhead at normal log levels
+    if (logger && logger.level >= 5) {
+      logger.trace('Statusline render', {
+        hook: 'statusline',
+        model: model,
+        contextUsed: remaining != null ? (100 - Math.round(remaining)) : null,
+        hasTask: !!task,
+        hasUpdate: !!gsdUpdate,
+        session: session
+      });
     }
 
     // Output
