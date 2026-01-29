@@ -99,11 +99,12 @@ Plans:
   3. verify-work.md includes logging for UAT session lifecycle
   4. All workflow command files have appropriate logging integration
   5. Wave-based parallel execution produces correlated logs
-**Plans**: 2 plans in 1 wave
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 05-01-PLAN.md — Add logging to core workflows (execute-phase, plan-phase) (Wave 1)
-- [ ] 05-02-PLAN.md — Add logging to remaining workflows (verify-work, debug, discuss, etc.) (Wave 1)
+- [x] 05-01-PLAN.md — Add logging to core workflows (execute-phase, plan-phase) (Wave 1)
+- [x] 05-02-PLAN.md — Add logging to remaining workflows (verify-work, debug, discuss, etc.) (Wave 1)
+- [ ] 05-03-PLAN.md — Gap closure: Add logger.X() wrapper examples to 7 workflow files (Wave 2)
 
 ### Phase 6: Documentation
 **Goal**: Complete logging documentation including reference guide, settings integration, and troubleshooting guide.
@@ -132,7 +133,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Hook Integration | 3/3 | Complete | 2026-01-29 |
 | 3. Agent Instrumentation | 2/2 | Complete | 2026-01-29 |
 | 4. Verification Logging | 2/2 | Complete | 2026-01-29 |
-| 5. Workflow Integration | 0/2 | Planned | - |
+| 5. Workflow Integration | 2/3 | In Progress | - |
 | 6. Documentation | 0/2 | Not started | - |
 
 ---
