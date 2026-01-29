@@ -114,75 +114,81 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 
 <logging>
 
-## Log Events
+## Logging Specifications for Orchestrator
 
 Milestone completion archives work and creates historical markers. Log key events for release tracking.
 
-### 1. Milestone Completion Start
+### 1. Milestone Start (INFO level)
 
-**Level:** INFO (3)
-**When:** Milestone completion operation begins
-**Purpose:** Record milestone lifecycle for audit trail
+Log when milestone completion operation begins to record milestone lifecycle for audit trail.
 
-**Message Format:**
-```
-Milestone completion started: v{version} [{audit_status}]
-```
+**Message format:** "Milestone completion started: v{version} [{audit_status}]"
 
-**Context:**
+**Context to include:**
+- `event`: "milestone.start"
+- `version`: Version identifier (e.g., "1.0")
+- `phases_count`: Number of phases in milestone
+- `audit_status`: Audit status ("passed", "gaps_found", or "missing")
+
+**Example code:**
+
 ```javascript
-{
-  event: "milestone.start",
-  version: "1.0",
-  phases_count: 6,
-  audit_status: "passed"  // or "gaps_found" or "missing"
-}
+logger.info(`Milestone completion started: v${version} [${auditStatus}]`, {
+  event: 'milestone.start',
+  version: version,
+  phases_count: phasesCount,
+  audit_status: auditStatus
+});
 ```
 
-### 2. Archive Creation
+### 2. Archive Creation (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Creating milestone archive files
-**Purpose:** Track archival operation for completeness verification
+Log when creating milestone archive files to track archival operation for completeness verification.
 
-**Message Format:**
-```
-Creating milestone archive: v{version}
-```
+**Message format:** "Creating milestone archive: v{version}"
 
-**Context:**
+**Context to include:**
+- `event`: "milestone.archive"
+- `version`: Version identifier
+- `archive_path`: Path to archive file being created
+- `stats`: Object with phases, plans, and commits counts
+
+**Example code:**
+
 ```javascript
-{
-  event: "milestone.archive",
-  version: "1.0",
-  archive_path: ".planning/milestones/v1.0-ROADMAP.md",
+logger.debug(`Creating milestone archive: v${version}`, {
+  event: 'milestone.archive',
+  version: version,
+  archive_path: archivePath,
   stats: {
-    phases: 6,
-    plans: 15,
-    commits: 42
+    phases: phasesCount,
+    plans: plansCount,
+    commits: commitsCount
   }
-}
+});
 ```
 
-### 3. Milestone Complete
+### 3. Milestone Complete (INFO level)
 
-**Level:** INFO (3)
-**When:** Milestone archived, tagged, and committed
-**Purpose:** Record milestone completion for release history
+Log when milestone is archived, tagged, and committed to record milestone completion for release history.
 
-**Message Format:**
-```
-Milestone complete: v{version} [tag: {tagged}]
-```
+**Message format:** "Milestone complete: v{version} [tag: {tagged}]"
 
-**Context:**
+**Context to include:**
+- `event`: "milestone.complete"
+- `version`: Version identifier
+- `tag_created`: Whether git tag was created (boolean)
+- `duration_ms`: Milestone completion duration in milliseconds
+
+**Example code:**
+
 ```javascript
-{
-  event: "milestone.complete",
-  version: "1.0",
-  tag_created: true,
-  duration_ms: 456000
-}
+logger.info(`Milestone complete: v${version} [tag: ${tagCreated}]`, {
+  event: 'milestone.complete',
+  version: version,
+  tag_created: tagCreated,
+  duration_ms: duration
+});
 ```
 
 </logging>

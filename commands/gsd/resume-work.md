@@ -41,50 +41,54 @@ The workflow handles all resumption logic including:
 
 <logging>
 
-## Log Events
+## Logging Specifications for Orchestrator
 
 Resume operations restore session context and route to next action. Log key events for session continuity tracking.
 
-### 1. Resume Start
+### 1. Resume Start (INFO level)
 
-**Level:** INFO (3)
-**When:** Resume operation begins
-**Purpose:** Record session resumption lifecycle
+Log when resume operation begins to record session resumption lifecycle.
 
-**Message Format:**
-```
-Resume work initiated [project: {path}]
-```
+**Message format:** "Resume work initiated [project: {path}]"
 
-**Context:**
+**Context to include:**
+- `event`: "resume.start"
+- `project_path`: Absolute path to project directory
+- `state_exists`: Whether STATE.md exists (boolean)
+- `checkpoints_found`: Number of .continue-here files found
+- `incomplete_work_found`: Number of PLAN files without SUMMARY
+
+**Example code:**
+
 ```javascript
-{
-  event: "resume.start",
-  project_path: "/media/foxy/ai/G/gsd/get-shit-done",
-  state_exists: true,
-  checkpoints_found: 0,
-  incomplete_work_found: 1
-}
+logger.info(`Resume work initiated [project: ${projectPath}]`, {
+  event: 'resume.start',
+  project_path: projectPath,
+  state_exists: stateExists,
+  checkpoints_found: checkpointsFound,
+  incomplete_work_found: incompleteWorkFound
+});
 ```
 
-### 2. Resume Complete
+### 2. Resume Complete (INFO level)
 
-**Level:** INFO (3)
-**When:** Context restored and routing decision made
-**Purpose:** Record routing decision for workflow continuity
+Log when context is restored and routing decision is made to record routing decision for workflow continuity.
 
-**Message Format:**
-```
-Resume complete: routed to {command}
-```
+**Message format:** "Resume complete: routed to {command}"
 
-**Context:**
+**Context to include:**
+- `event`: "resume.complete"
+- `routed_to`: Command being routed to (e.g., "/gsd:execute-phase 05")
+- `context_loaded`: Whether full context was loaded (boolean)
+
+**Example code:**
+
 ```javascript
-{
-  event: "resume.complete",
-  routed_to: "/gsd:execute-phase 05",
-  context_loaded: true
-}
+logger.info(`Resume complete: routed to ${routedTo}`, {
+  event: 'resume.complete',
+  routed_to: routedTo,
+  context_loaded: contextLoaded
+});
 ```
 
 </logging>
