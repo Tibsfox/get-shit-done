@@ -1190,6 +1190,266 @@ Check for mode flags in prompt context:
 
 </modes>
 
+<logging>
+
+## Agent Spawn
+
+Log agent spawn at INFO level when orchestrator creates the debugger via Task().
+
+**Message format:** "Agent spawn: gsd-debugger"
+
+**Context metadata:**
+- `agent_id`: Task ID from orchestrator
+- `agent_type`: "gsd-debugger"
+- `mode`: "interactive" or "diagnose"
+- `bug_description_summary`: Brief summary of reported issue (first 100 chars)
+- `model`: Model being used
+
+**Example:**
+```javascript
+logger.info('Agent spawn: gsd-debugger', {
+  agent_id: taskId,
+  agent_type: 'gsd-debugger',
+  mode: 'interactive',
+  bug_description_summary: 'Login form submits but user not authenticated',
+  model: 'claude-sonnet-4'
+});
+```
+
+## Agent Completion
+
+Log agent completion at INFO level when debugging finishes (root cause found, fix applied, or blocked).
+
+**Message format:** "Agent completion: gsd-debugger - {outcome}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `agent_type`: "gsd-debugger"
+- `outcome`: "root_cause_found", "debug_complete", "checkpoint", or "blocked"
+- `duration_ms`: Execution time in milliseconds
+- `root_cause_found`: Boolean indicating if root cause was identified
+- `fix_applied`: Boolean indicating if fix was applied (diagnose mode)
+- `verification_passed`: Boolean indicating if fix was verified
+- `hypotheses_tested`: Number of hypotheses tested during investigation
+- `debug_file`: Path to debug session file
+
+**Example:**
+```javascript
+logger.info('Agent completion: gsd-debugger - debug_complete', {
+  agent_id: taskId,
+  agent_type: 'gsd-debugger',
+  outcome: 'debug_complete',
+  duration_ms: 180000,
+  root_cause_found: true,
+  fix_applied: true,
+  verification_passed: true,
+  hypotheses_tested: 3,
+  debug_file: '.planning/debug/DEBUG-20260129-063000.md'
+});
+```
+
+## Investigation Phase
+
+Log each investigation phase transition at DEBUG level to track debugging methodology.
+
+**Message format:** "Investigation phase: {phase}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `phase`: "evidence_gathering", "hypothesis_formation", "testing", "diagnosis", "fixing", "verification"
+- `duration_ms`: Time spent in this phase
+- `findings_count`: Number of findings or actions in this phase
+
+**Example:**
+```javascript
+logger.debug('Investigation phase: hypothesis_formation', {
+  agent_id: taskId,
+  phase: 'hypothesis_formation',
+  duration_ms: 15000,
+  findings_count: 3
+});
+```
+
+## Hypothesis Formed
+
+Log each hypothesis at DEBUG level when forming potential explanations.
+
+**Message format:** "Hypothesis formed: {hypothesis_number}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `hypothesis_number`: Sequential hypothesis number
+- `description`: Brief hypothesis description (first 100 chars)
+- `confidence`: "high", "medium", or "low" initial confidence
+- `evidence_supporting`: Number of pieces of evidence supporting this hypothesis
+
+**Example:**
+```javascript
+logger.debug('Hypothesis formed: 1', {
+  agent_id: taskId,
+  hypothesis_number: 1,
+  description: 'Auth token not being set in cookie after login API call',
+  confidence: 'medium',
+  evidence_supporting: 2
+});
+```
+
+## Hypothesis Tested
+
+Log hypothesis test results at DEBUG level when validating explanations.
+
+**Message format:** "Hypothesis tested: {hypothesis_number}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `hypothesis_number`: Which hypothesis was tested
+- `test_method`: How it was tested (code_inspection, test_execution, reproduction, etc.)
+- `result`: "confirmed", "rejected", or "inconclusive"
+- `evidence`: Brief description of evidence from test
+
+**Example:**
+```javascript
+logger.debug('Hypothesis tested: 1', {
+  agent_id: taskId,
+  hypothesis_number: 1,
+  test_method: 'code_inspection',
+  result: 'confirmed',
+  evidence: 'Login API returns token but response handler does not set cookie'
+});
+```
+
+## Root Cause Identified
+
+Log root cause identification at INFO level when the bug's true cause is confirmed.
+
+**Message format:** "Root cause identified"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `root_cause`: Description of the root cause
+- `confidence`: "definitive" or "likely"
+- `evidence_count`: Number of pieces of evidence supporting this conclusion
+- `file_location`: Primary file where issue exists
+- `line_number`: Line number if applicable
+
+**Example:**
+```javascript
+logger.info('Root cause identified', {
+  agent_id: taskId,
+  root_cause: 'Login response handler missing cookie.set() call',
+  confidence: 'definitive',
+  evidence_count: 3,
+  file_location: 'src/components/LoginForm.tsx',
+  line_number: 45
+});
+```
+
+## Fix Applied
+
+Log fix application at INFO level when code changes are made.
+
+**Message format:** "Fix applied"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `fix_description`: What was changed
+- `files_modified`: Array of modified file paths
+- `commit_hash`: Git commit hash if committed
+
+**Example:**
+```javascript
+logger.info('Fix applied', {
+  agent_id: taskId,
+  fix_description: 'Added cookie.set() call in login response handler',
+  files_modified: ['src/components/LoginForm.tsx'],
+  commit_hash: 'a3f8d91'
+});
+```
+
+## Checkpoint Pause
+
+Log checkpoint pause at INFO level when debugging must pause for user input.
+
+**Message format:** "Checkpoint pause: {checkpoint_type}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `checkpoint_type`: Type of checkpoint (human-verify, human-action, decision)
+- `reason`: Why checkpoint is needed
+- `current_state`: Current investigation state (phase, hypotheses tested, etc.)
+
+**Example:**
+```javascript
+logger.info('Checkpoint pause: human-verify', {
+  agent_id: taskId,
+  checkpoint_type: 'human-verify',
+  reason: 'Need user to test login flow after fix',
+  current_state: {
+    phase: 'verification',
+    hypotheses_tested: 2,
+    fix_applied: true
+  }
+});
+```
+
+## Checkpoint Resume
+
+Log checkpoint resume at INFO level when debugging continues after user input.
+
+**Message format:** "Checkpoint resume: {checkpoint_type}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `checkpoint_type`: Type of checkpoint resumed from
+- `user_input_summary`: Brief summary of user's input/response
+- `continuation_action`: What the debugger will do next
+
+**Example:**
+```javascript
+logger.info('Checkpoint resume: human-verify', {
+  agent_id: taskId,
+  checkpoint_type: 'human-verify',
+  user_input_summary: 'User confirmed login now works correctly',
+  continuation_action: 'Finalizing debug session with successful fix'
+});
+```
+
+## Context Pressure
+
+Log context window pressure at thresholds during debugging.
+
+**75% threshold (DEBUG):**
+```javascript
+logger.debug('Context pressure: 75%', {
+  agent_id: taskId,
+  agent_type: 'gsd-debugger',
+  tokens_used: 150000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  investigation_phase: 'testing',
+  hypotheses_tested: 2,
+  hypotheses_remaining: 1
+});
+```
+
+**90% threshold (WARN):**
+```javascript
+logger.warn('Context pressure: 90%', {
+  agent_id: taskId,
+  agent_type: 'gsd-debugger',
+  tokens_used: 180000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  investigation_phase: 'diagnosis',
+  hypotheses_tested: 3,
+  hypotheses_remaining: 0
+});
+```
+
+**Note:** Debugger sessions can be long and complex. Context pressure logging is especially important to detect when investigation should be paused and resumed in a fresh session with debug file state preserved.
+
+</logging>
+
 <success_criteria>
 - [ ] Debug file created IMMEDIATELY on command
 - [ ] File updated after EACH piece of information
