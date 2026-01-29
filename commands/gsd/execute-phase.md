@@ -327,6 +327,166 @@ After all plans in phase complete (step 7):
 **Always stage files individually.**
 </commit_rules>
 
+<logging>
+
+## Logging Specifications for Orchestrator
+
+The orchestrator should log the following coordination events during wave-based phase execution:
+
+### 1. Wave Start (INFO level)
+
+Log before spawning parallel agents for a wave, capturing the execution context.
+
+**Message format:** "Wave start"
+
+**Context to include:**
+- `phase`: Phase identifier (e.g., "05")
+- `wave`: Wave number (1, 2, 3, etc.)
+- `plans`: Array of plan IDs in this wave (e.g., ["05-01", "05-02"])
+- `plan_count`: Number of plans in this wave
+
+**Example code:**
+
+```javascript
+logger.info('Wave start', {
+  phase: phaseNumber,
+  wave: waveNumber,
+  plans: wavePlans.map(p => p.id),
+  plan_count: wavePlans.length
+});
+```
+
+### 2. Subagent Spawn (DEBUG level)
+
+Log when spawning each executor agent within a wave.
+
+**Message format:** "Subagent spawn"
+
+**Context to include:**
+- `agent_type`: "gsd-executor"
+- `plan`: Plan identifier (e.g., "05-01")
+- `wave`: Wave number
+- `phase`: Phase identifier
+- `model`: Claude model being used
+
+**Example code:**
+
+```javascript
+logger.debug('Subagent spawn', {
+  agent_type: 'gsd-executor',
+  plan: plan.id,
+  wave: waveNumber,
+  phase: phaseNumber,
+  model: executorModel
+});
+```
+
+### 3. Wave Complete (INFO level)
+
+Log after all agents in a wave have completed and outcomes are verified.
+
+**Message format:** "Wave complete"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `wave`: Wave number
+- `duration_ms`: Time from wave start to completion in milliseconds
+- `plans_completed`: Number of plans that finished
+- `outcomes`: Object with counts - `{ success: N, failure: N, partial: N }`
+
+**Example code:**
+
+```javascript
+logger.info('Wave complete', {
+  phase: phaseNumber,
+  wave: waveNumber,
+  duration_ms: waveEndTime - waveStartTime,
+  plans_completed: results.length,
+  outcomes: {
+    success: results.filter(r => r.outcome === 'success').length,
+    failure: results.filter(r => r.outcome === 'failure').length,
+    partial: results.filter(r => r.outcome === 'partial').length
+  }
+});
+```
+
+### 4. Phase Complete (INFO level)
+
+Log after all waves complete and phase-level aggregation is done.
+
+**Message format:** "Phase complete"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `plans_total`: Total plans in phase
+- `plans_completed`: Plans successfully completed
+- `waves_executed`: Number of waves executed
+- `total_duration_ms`: Total phase execution time
+- `outcomes`: Aggregated outcomes across all waves
+- `verification_status`: Result from phase verification ("passed" | "gaps_found" | "skipped")
+
+**Example code:**
+
+```javascript
+logger.info('Phase complete', {
+  phase: phaseNumber,
+  plans_total: allPlans.length,
+  plans_completed: completedPlans.length,
+  waves_executed: wavesCount,
+  total_duration_ms: phaseEndTime - phaseStartTime,
+  outcomes: {
+    success: summaries.filter(s => s.outcome === 'success').length,
+    failure: summaries.filter(s => s.outcome === 'failure').length,
+    partial: summaries.filter(s => s.outcome === 'partial').length
+  },
+  verification_status: verificationResult.status
+});
+```
+
+### 5. Verification Spawn (DEBUG level)
+
+Log when spawning the verifier agent for phase goal verification.
+
+**Message format:** "Subagent spawn"
+
+**Context to include:**
+- `agent_type`: "gsd-verifier"
+- `phase`: Phase identifier
+- `model`: Claude model being used
+
+**Example code:**
+
+```javascript
+logger.debug('Subagent spawn', {
+  agent_type: 'gsd-verifier',
+  phase: phaseNumber,
+  model: verifierModel
+});
+```
+
+### 6. Orchestrator Corrections (DEBUG level)
+
+Log when orchestrator commits corrections between executor completions (process step 6).
+
+**Message format:** "Orchestrator corrections"
+
+**Context to include:**
+- `phase`: Phase identifier
+- `files_corrected`: Array of files modified by orchestrator
+- `commit_hash`: Hash of the correction commit
+
+**Example code:**
+
+```javascript
+logger.debug('Orchestrator corrections', {
+  phase: phaseNumber,
+  files_corrected: modifiedFiles,
+  commit_hash: commitHash
+});
+```
+
+</logging>
+
 <success_criteria>
 - [ ] All incomplete plans in phase executed
 - [ ] Each plan has SUMMARY.md
