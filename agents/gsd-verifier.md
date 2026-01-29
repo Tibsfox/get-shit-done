@@ -833,6 +833,10 @@ Log when verification process begins after context loading.
 - `plans_count`: Number of plans in phase
 - `must_haves_count`: Total must-haves to verify
 - `mode`: "initial" | "re-verification"
+- `previous_status`: Previous verification status if re-verification (e.g., "gaps_found")
+- `previous_gaps_count`: Number of gaps from previous run (0 if initial)
+- `gaps_closed`: Array of truths that were fixed since last run (for re-verification)
+- `regressions`: Array of truths that passed before but now fail (for re-verification)
 
 **Example code:**
 
@@ -842,7 +846,11 @@ logger.info('Verification start', {
   phase: phaseId,
   plans_count: plans.length,
   must_haves_count: mustHaves.truths.length + mustHaves.artifacts.length + mustHaves.key_links.length,
-  mode: isReVerification ? 're-verification' : 'initial'
+  mode: isReVerification ? 're-verification' : 'initial',
+  previous_status: isReVerification ? previousVerification.status : undefined,
+  previous_gaps_count: isReVerification ? previousVerification.gaps.length : 0,
+  gaps_closed: isReVerification ? closedGaps.map(g => g.truth) : undefined,
+  regressions: isReVerification ? regressions.map(g => g.truth) : undefined
 });
 ```
 
@@ -1002,6 +1010,35 @@ logger.warn('Context pressure critical', {
   percent_used: 90,
   rate_per_turn: 5000,
   estimated_turns_remaining: 4
+});
+```
+
+### 8a. Re-Verification Progress (INFO level)
+
+Log progress tracking during re-verification to show gap closure iteration.
+
+**Message format:** "Re-verification progress"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `iteration`: Iteration number (1, 2, 3, ...)
+- `gaps_closed`: Array of truths that were fixed since last run
+- `gaps_remaining`: Count of gaps still present
+- `regressions`: Array of truths that passed before but now fail
+- `progression`: "improving" | "static" | "regressing"
+
+**Example code:**
+
+```javascript
+// Re-verification progress logging
+logger.info('Re-verification progress', {
+  agent_id: agentId,
+  iteration: iterationNumber,
+  gaps_closed: closedGaps.map(g => g.truth),
+  gaps_remaining: remainingGaps.length,
+  regressions: regressions.map(g => g.truth),
+  progression: closedGaps.length > regressions.length ? 'improving' :
+               closedGaps.length === regressions.length ? 'static' : 'regressing'
 });
 ```
 
