@@ -1350,6 +1350,233 @@ Checker can now re-verify updated plans.
 
 </structured_returns>
 
+<logging>
+
+## Logging Specifications for Orchestrator
+
+The orchestrator should log the following lifecycle events during gsd-planner agent execution:
+
+### 1. Agent Spawn (INFO level)
+
+Log when the planner agent is spawned to create phase plans.
+
+**Message format:** "Agent spawn: gsd-planner"
+
+**Context to include:**
+- `agent_id`: Unique identifier for this agent instance
+- `agent_type`: "gsd-planner"
+- `phase`: Phase identifier being planned (e.g., "03-agent-instrumentation")
+- `mode`: "standard" | "gap_closure" | "revision"
+- `depth`: Planning depth (quick | standard | comprehensive)
+
+**Example code:**
+
+```javascript
+logger.info('Agent spawn: gsd-planner', {
+  agent_id: agentId,
+  agent_type: 'gsd-planner',
+  phase: phaseId,
+  mode: planningMode,
+  depth: 'standard'
+});
+```
+
+### 2. Agent Completion (INFO level)
+
+Log when planning completes with created plans summary.
+
+**Message format:** "Agent completion: gsd-planner"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `outcome`: "success" | "failure" | "partial"
+- `duration_ms`: Actual planning duration in milliseconds
+- `plans_created`: Number of plans created
+- `waves_count`: Number of execution waves
+- `total_tasks`: Total tasks across all plans
+- `mode`: "standard" | "gap_closure" | "revision"
+
+**Example code:**
+
+```javascript
+logger.info('Agent completion: gsd-planner', {
+  agent_id: agentId,
+  outcome: 'success',
+  duration_ms: planningEnd - planningStart,
+  plans_created: plans.length,
+  waves_count: maxWave,
+  total_tasks: plans.reduce((sum, p) => sum + p.tasks.length, 0),
+  mode: planningMode
+});
+```
+
+### 3. Discovery Assessment (DEBUG level)
+
+Log the result of mandatory discovery level assessment.
+
+**Message format:** "Discovery level assessed"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `level`: 0 | 1 | 2 | 3
+- `reason`: Why this level was chosen
+- `action`: "skip_discovery" | "quick_verification" | "standard_research" | "deep_dive"
+
+**Example code:**
+
+```javascript
+logger.debug('Discovery level assessed', {
+  agent_id: agentId,
+  level: 1,
+  reason: 'Single known library, confirming syntax/version',
+  action: 'quick_verification'
+});
+```
+
+### 4. Plan Created (INFO level)
+
+Log each plan as it's created during planning.
+
+**Message format:** "Plan created: {plan_id}"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `plan_id`: Plan identifier (e.g., "03-01")
+- `wave`: Execution wave number
+- `tasks_count`: Number of tasks in plan
+- `files_modified`: Array of files this plan will modify
+- `autonomous`: Boolean indicating if plan has checkpoints
+- `has_checkpoints`: Boolean explicitly indicating checkpoint presence
+
+**Example code:**
+
+```javascript
+logger.info('Plan created: 03-01', {
+  agent_id: agentId,
+  plan_id: '03-01',
+  wave: 1,
+  tasks_count: 3,
+  files_modified: ['agents/gsd-executor.md', 'agents/gsd-verifier.md'],
+  autonomous: true,
+  has_checkpoints: false
+});
+```
+
+### 5. Wave Assignment (DEBUG level)
+
+Log the wave assignment process after dependency analysis.
+
+**Message format:** "Wave assignment complete"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `waves_count`: Total number of waves
+- `parallel_plans`: Number of plans that can run in parallel (Wave 1)
+- `sequential_plans`: Number of plans that must run sequentially
+
+**Example code:**
+
+```javascript
+logger.debug('Wave assignment complete', {
+  agent_id: agentId,
+  waves_count: 3,
+  parallel_plans: 2,
+  sequential_plans: 1
+});
+```
+
+### 6. Must-Haves Derivation (DEBUG level)
+
+Log the goal-backward must-haves derivation for a plan.
+
+**Message format:** "Must-haves derived"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `plan_id`: Plan identifier
+- `truths_count`: Number of observable truths derived
+- `artifacts_count`: Number of required artifacts identified
+- `key_links_count`: Number of critical connections identified
+
+**Example code:**
+
+```javascript
+logger.debug('Must-haves derived', {
+  agent_id: agentId,
+  plan_id: '03-01',
+  truths_count: 3,
+  artifacts_count: 3,
+  key_links_count: 2
+});
+```
+
+### 7. Gap Closure Mode (INFO level)
+
+Log when planning in gap closure mode, triggered by verification or UAT failures.
+
+**Message format:** "Gap closure planning"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `gaps_count`: Number of gaps being addressed
+- `source_file`: "VERIFICATION.md" | "UAT.md" (source of gaps)
+
+**Example code:**
+
+```javascript
+logger.info('Gap closure planning', {
+  agent_id: agentId,
+  gaps_count: 5,
+  source_file: 'VERIFICATION.md'
+});
+```
+
+### 8. Context Pressure (DEBUG at 75%, WARN at 90%+)
+
+Log when context window usage reaches warning thresholds during planning.
+
+**Message format:** "Context pressure warning" (at 75%) or "Context pressure critical" (at 90%+)
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `threshold`: "warning" (75%) | "critical" (90%+)
+- `tokens_used`: Absolute token count used
+- `tokens_total`: Total context window size
+- `tokens_remaining`: Remaining tokens available
+- `percent_used`: Percentage of context used
+- `rate_per_turn`: Average tokens consumed per turn
+- `estimated_turns_remaining`: Estimated turns before context exhausted
+
+**Example code:**
+
+```javascript
+// At 75% threshold
+logger.debug('Context pressure warning', {
+  agent_id: agentId,
+  threshold: 'warning',
+  tokens_used: 150000,
+  tokens_total: 200000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  rate_per_turn: 5000,
+  estimated_turns_remaining: 10
+});
+
+// At 90%+ threshold
+logger.warn('Context pressure critical', {
+  agent_id: agentId,
+  threshold: 'critical',
+  tokens_used: 180000,
+  tokens_total: 200000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  rate_per_turn: 5000,
+  estimated_turns_remaining: 4
+});
+```
+
+</logging>
+
 <success_criteria>
 
 ## Standard Mode
