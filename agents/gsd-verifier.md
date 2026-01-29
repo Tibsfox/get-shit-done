@@ -1042,6 +1042,18 @@ logger.info('Re-verification progress', {
 });
 ```
 
+### Audit Trail Considerations
+
+Verification logging creates an immutable audit trail for compliance and debugging. Key principles:
+
+**Correlation:** Every log entry includes `agent_id` for session correlation, enabling reconstruction of a complete verification session. Re-verification links to previous runs via `previous_verification_id` field when available. Gap closure plans reference the originating `verification_id` in their logs, creating a complete chain of custody from gap detection through resolution.
+
+**Immutability:** Log entries are append-only via the syslog transport. Never modify previous verification logs. Each re-verification creates new entries rather than updating old ones. This ensures the verification history is tamper-proof and provides a complete timeline of all verification attempts.
+
+**Chain of custody:** Verification start logs capture the must_haves snapshot at verification time. Gap detection logs capture full gap context including affected artifacts and missing items. Verification outcome logs provide closure for the verification session. Together, these create a complete audit trail showing what was verified, what was found, and what the outcome was.
+
+**Querying patterns:** To reconstruct a verification session, filter logs by `agent_id` to see all events in a single session. To see all verifications of a phase across iterations, filter by `phase` identifier. To find incomplete verifications requiring attention, filter by `status=gaps_found`. Sort by timestamp to see progression across re-verification iterations. Use `gaps_closed` and `regressions` fields to track which truths improved or degraded between iterations.
+
 </logging>
 
 <success_criteria>
