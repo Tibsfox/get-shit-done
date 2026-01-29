@@ -997,6 +997,9 @@ function install(isGlobal, runtime = 'claude') {
   const updateCheckCommand = isGlobal
     ? buildHookCommand(targetDir, 'gsd-check-update.js')
     : 'node ' + dirName + '/hooks/gsd-check-update.js';
+  const logInitCommand = isGlobal
+    ? buildHookCommand(targetDir, 'gsd-log-init.js')
+    : 'node ' + dirName + '/hooks/gsd-log-init.js';
 
   // Configure SessionStart hook for update checking (skip for opencode - different hook system)
   if (!isOpencode) {
@@ -1005,6 +1008,24 @@ function install(isGlobal, runtime = 'claude') {
     }
     if (!settings.hooks.SessionStart) {
       settings.hooks.SessionStart = [];
+    }
+
+    // Check if GSD log init hook already exists
+    const hasGsdLogInitHook = settings.hooks.SessionStart.some(entry =>
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-log-init'))
+    );
+
+    // Add logging init hook (runs first via unshift to initialize logger before other hooks)
+    if (!hasGsdLogInitHook) {
+      settings.hooks.SessionStart.unshift({
+        hooks: [
+          {
+            type: 'command',
+            command: logInitCommand
+          }
+        ]
+      });
+      console.log(`  ${green}✓${reset} Configured logging hook`);
     }
 
     // Check if GSD update hook already exists
