@@ -116,11 +116,11 @@ Plans:
   3. Troubleshooting guide includes log-based diagnosis examples
   4. CHANGELOG updated with logging feature summary
   5. Users can enable DEBUG logging and view logs in journalctl
-**Plans**: 2 plans
+**Plans**: 2 plans in 1 wave
 
 Plans:
-- [ ] 06-01: Create references/logging.md and update CHANGELOG
-- [ ] 06-02: Update /gsd:settings command and add troubleshooting section
+- [ ] 06-01-PLAN.md — Create references/logging.md and CHANGELOG entry (Wave 1)
+- [ ] 06-02-PLAN.md — Update /gsd:settings with logging display (Wave 1)
 
 ## Progress
 
