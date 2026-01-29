@@ -35,10 +35,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans in 2 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Config loading module with precedence merging (Wave 1)
-- [ ] 01-02-PLAN.md — Syslog transport with RFC 5424 formatting (Wave 1)
-- [ ] 01-03-PLAN.md — Timer and Metrics utilities for performance tracking (Wave 1)
-- [ ] 01-04-PLAN.md — Core Logger class integrating config, syslog, and session tracking (Wave 2)
+- [x] 01-01-PLAN.md — Config loading module with precedence merging (Wave 1)
+- [x] 01-02-PLAN.md — Syslog transport with RFC 5424 formatting (Wave 1)
+- [x] 01-03-PLAN.md — Timer and Metrics utilities for performance tracking (Wave 1)
+- [x] 01-04-PLAN.md — Core Logger class integrating config, syslog, and session tracking (Wave 2)
 
 ### Phase 2: Hook Integration
 **Goal**: Integrate logging into GSD's hook system so that sessions are logged from start, and existing hooks produce appropriate log output.
@@ -67,11 +67,11 @@ Plans:
   3. Specs include appropriate log levels for each event type
   4. Context pressure logging (token usage) is specified at level 4+
   5. Orchestrators following specs produce consistent, useful logs
-**Plans**: 2 plans
+**Plans**: 2 plans in 1 wave
 
 Plans:
-- [ ] 03-01: Add logging sections to core agents (executor, verifier, planner)
-- [ ] 03-02: Add logging sections to remaining agents (researchers, debugger, etc.)
+- [ ] 03-01-PLAN.md — Add logging sections to core agents (executor, verifier, planner) (Wave 1)
+- [ ] 03-02-PLAN.md — Add logging sections to remaining agents (researchers, debugger, etc.) (Wave 1)
 
 ### Phase 4: Verification Logging
 **Goal**: Implement detailed logging of verification results, including artifact checks, gap detection, and link verification.
@@ -162,10 +162,10 @@ Phase 2: Hook Integration
            v
 Phase 3: Agent Instrumentation
     |
-    +-- agents/gsd-executor.md
-    +-- agents/gsd-verifier.md
-    +-- agents/gsd-planner.md
-    +-- agents/*.md (all others)
+    +-- agents/gsd-executor.md [Wave 1]
+    +-- agents/gsd-verifier.md [Wave 1]
+    +-- agents/gsd-planner.md [Wave 1]
+    +-- agents/*.md (all others) [Wave 1]
            |
            v
 Phase 4: Verification Logging
