@@ -759,6 +759,254 @@ return <div>No messages</div>  // Always shows "no messages"
 
 </stub_detection_patterns>
 
+<logging>
+
+## Logging Specifications for Orchestrator
+
+The orchestrator should log the following lifecycle events during gsd-verifier agent execution:
+
+### 1. Agent Spawn (INFO level)
+
+Log when the verifier agent is spawned to begin phase verification.
+
+**Message format:** "Agent spawn: gsd-verifier"
+
+**Context to include:**
+- `agent_id`: Unique identifier for this agent instance
+- `agent_type`: "gsd-verifier"
+- `phase`: Phase identifier being verified (e.g., "03-agent-instrumentation")
+- `is_re_verification`: Boolean indicating if this is re-verification after gap closure
+- `must_haves_count`: Total number of must-haves to verify (truths + artifacts + key_links)
+
+**Example code:**
+
+```javascript
+logger.info('Agent spawn: gsd-verifier', {
+  agent_id: agentId,
+  agent_type: 'gsd-verifier',
+  phase: phaseId,
+  is_re_verification: false,
+  must_haves_count: mustHaves.truths.length + mustHaves.artifacts.length + mustHaves.key_links.length
+});
+```
+
+### 2. Agent Completion (INFO level)
+
+Log when verification completes with final status and score.
+
+**Message format:** "Agent completion: gsd-verifier"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `outcome`: "success" (verification completed, regardless of pass/fail)
+- `duration_ms`: Actual verification duration in milliseconds
+- `status`: "passed" | "gaps_found" | "human_needed"
+- `score`: Fraction of must-haves verified (e.g., "4/5")
+- `truths_verified`: Number of truths that passed verification
+- `truths_total`: Total truths checked
+- `gaps_count`: Number of gaps detected (0 if passed)
+
+**Example code:**
+
+```javascript
+logger.info('Agent completion: gsd-verifier', {
+  agent_id: agentId,
+  outcome: 'success',
+  duration_ms: verificationEnd - verificationStart,
+  status: verificationResult.status,
+  score: `${verifiedCount}/${totalCount}`,
+  truths_verified: verifiedTruths.length,
+  truths_total: mustHaves.truths.length,
+  gaps_count: gaps.length
+});
+```
+
+### 3. Verification Start (INFO level)
+
+Log when verification process begins after context loading.
+
+**Message format:** "Verification start"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `phase`: Phase identifier
+- `plans_count`: Number of plans in phase
+- `must_haves_count`: Total must-haves to verify
+- `mode`: "initial" | "re-verification"
+
+**Example code:**
+
+```javascript
+logger.info('Verification start', {
+  agent_id: agentId,
+  phase: phaseId,
+  plans_count: plans.length,
+  must_haves_count: mustHaves.truths.length + mustHaves.artifacts.length + mustHaves.key_links.length,
+  mode: isReVerification ? 're-verification' : 'initial'
+});
+```
+
+### 4. Artifact Check (DEBUG level)
+
+Log each artifact verification check (exists, substantive, wired).
+
+**Message format:** "Artifact check: {artifact_path}"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `path`: Artifact file path
+- `exists`: Boolean - file exists
+- `substantive`: Boolean or status - adequate content and no stubs
+- `wired`: Boolean or status - imported and used
+- `status`: "verified" | "stub" | "orphaned" | "missing"
+- `issue`: Description of issue if status is not verified
+
+**Example code:**
+
+```javascript
+logger.debug('Artifact check: src/components/Chat.tsx', {
+  agent_id: agentId,
+  path: 'src/components/Chat.tsx',
+  exists: true,
+  substantive: true,
+  wired: false,
+  status: 'orphaned',
+  issue: 'Component exists with real implementation but not imported anywhere'
+});
+```
+
+### 5. Key Link Verification (DEBUG level)
+
+Log verification of critical connections between components.
+
+**Message format:** "Key link check: {from} -> {to}"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `from`: Source artifact (e.g., "Chat.tsx")
+- `to`: Target artifact or API (e.g., "/api/chat")
+- `via`: Connection method (e.g., "fetch in useEffect")
+- `status`: "wired" | "not_wired" | "partial" | "orphaned"
+- `details`: Additional information about the link state
+
+**Example code:**
+
+```javascript
+logger.debug('Key link check: Chat.tsx -> /api/chat', {
+  agent_id: agentId,
+  from: 'src/components/Chat.tsx',
+  to: '/api/chat',
+  via: 'fetch in useEffect',
+  status: 'wired',
+  details: 'Found fetch call with response handling'
+});
+```
+
+### 6. Gap Detection (INFO level)
+
+Log when a gap is detected (truth fails verification).
+
+**Message format:** "Gap detected: {truth}"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `truth`: The observable truth that failed
+- `status`: "failed" | "partial"
+- `reason`: Why verification failed
+- `artifacts_affected`: Array of artifacts with issues
+- `missing_items`: Array of specific things missing or broken
+
+**Example code:**
+
+```javascript
+logger.info('Gap detected: User can see existing messages', {
+  agent_id: agentId,
+  truth: 'User can see existing messages',
+  status: 'failed',
+  reason: 'Chat component exists but does not fetch messages from API',
+  artifacts_affected: ['src/components/Chat.tsx'],
+  missing_items: [
+    'API call in useEffect to /api/chat',
+    'State for storing fetched messages',
+    'Render messages array in JSX'
+  ]
+});
+```
+
+### 7. Verification Outcome (INFO level)
+
+Log final verification outcome with complete summary.
+
+**Message format:** "Verification outcome: {status}"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `status`: "passed" | "gaps_found" | "human_needed"
+- `score`: Verification score (e.g., "4/5 truths verified")
+- `gaps`: Array of gap summaries if any detected
+- `human_verification_needed`: Boolean indicating if human testing required
+
+**Example code:**
+
+```javascript
+logger.info('Verification outcome: gaps_found', {
+  agent_id: agentId,
+  status: 'gaps_found',
+  score: '3/5 truths verified',
+  gaps: gaps.map(g => ({
+    truth: g.truth,
+    reason: g.reason
+  })),
+  human_verification_needed: false
+});
+```
+
+### 8. Context Pressure (DEBUG at 75%, WARN at 90%+)
+
+Log when context window usage reaches warning thresholds during verification.
+
+**Message format:** "Context pressure warning" (at 75%) or "Context pressure critical" (at 90%+)
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `threshold`: "warning" (75%) | "critical" (90%+)
+- `tokens_used`: Absolute token count used
+- `tokens_total`: Total context window size
+- `tokens_remaining`: Remaining tokens available
+- `percent_used`: Percentage of context used
+- `rate_per_turn`: Average tokens consumed per turn
+- `estimated_turns_remaining`: Estimated turns before context exhausted
+
+**Example code:**
+
+```javascript
+// At 75% threshold
+logger.debug('Context pressure warning', {
+  agent_id: agentId,
+  threshold: 'warning',
+  tokens_used: 150000,
+  tokens_total: 200000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  rate_per_turn: 5000,
+  estimated_turns_remaining: 10
+});
+
+// At 90%+ threshold
+logger.warn('Context pressure critical', {
+  agent_id: agentId,
+  threshold: 'critical',
+  tokens_used: 180000,
+  tokens_total: 200000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  rate_per_turn: 5000,
+  estimated_turns_remaining: 4
+});
+```
+
+</logging>
+
 <success_criteria>
 
 - [ ] Previous VERIFICATION.md checked (Step 0)
