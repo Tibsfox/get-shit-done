@@ -614,6 +614,140 @@ When research cannot proceed:
 
 </structured_returns>
 
+<logging>
+
+## Agent Spawn
+
+Log agent spawn at INFO level when orchestrator creates the phase researcher via Task().
+
+**Message format:** "Agent spawn: gsd-phase-researcher"
+
+**Context metadata:**
+- `agent_id`: Task ID from orchestrator
+- `agent_type`: "gsd-phase-researcher"
+- `phase`: Phase number being researched
+- `domain`: Primary technology/problem domain
+- `has_context_md`: Boolean indicating if CONTEXT.md exists (constrains research scope)
+- `model`: Model being used
+
+**Example:**
+```javascript
+logger.info('Agent spawn: gsd-phase-researcher', {
+  agent_id: taskId,
+  agent_type: 'gsd-phase-researcher',
+  phase: '03',
+  domain: 'structured logging patterns',
+  has_context_md: true,
+  model: 'claude-sonnet-4'
+});
+```
+
+## Agent Completion
+
+Log agent completion at INFO level when RESEARCH.md is written and committed.
+
+**Message format:** "Agent completion: gsd-phase-researcher - {outcome}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `agent_type`: "gsd-phase-researcher"
+- `outcome`: "complete" or "blocked"
+- `duration_ms`: Execution time in milliseconds
+- `sections_produced`: Number of major sections written (stack, patterns, pitfalls, etc.)
+- `confidence`: Overall research confidence (HIGH/MEDIUM/LOW)
+- `research_file`: Path to RESEARCH.md
+
+**Example:**
+```javascript
+logger.info('Agent completion: gsd-phase-researcher - complete', {
+  agent_id: taskId,
+  agent_type: 'gsd-phase-researcher',
+  outcome: 'complete',
+  duration_ms: 45000,
+  sections_produced: 6,
+  confidence: 'HIGH',
+  research_file: '.planning/phases/03-agent-instrumentation/03-RESEARCH.md'
+});
+```
+
+## Research Source
+
+Log each research source query at DEBUG level to track information gathering.
+
+**Message format:** "Research source: {source_type}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `source_type`: "context7", "official_docs", "web_search", "training_data"
+- `query`: Search query or topic
+- `success`: Boolean indicating if useful information was found
+- `library_id`: (if Context7) Library identifier
+
+**Example:**
+```javascript
+logger.debug('Research source: context7', {
+  agent_id: taskId,
+  source_type: 'context7',
+  query: 'structured logging best practices',
+  success: true,
+  library_id: 'winston-3.x'
+});
+```
+
+## Finding Documented
+
+Log each major finding at DEBUG level when adding to RESEARCH.md sections.
+
+**Message format:** "Finding documented: {section}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `section`: Which section (standard_stack, architecture_patterns, pitfalls, code_examples, etc.)
+- `confidence`: HIGH, MEDIUM, or LOW
+- `source_count`: Number of sources supporting this finding
+
+**Example:**
+```javascript
+logger.debug('Finding documented: architecture_patterns', {
+  agent_id: taskId,
+  section: 'architecture_patterns',
+  confidence: 'HIGH',
+  source_count: 3
+});
+```
+
+## Context Pressure
+
+Log context window pressure at thresholds during research.
+
+**75% threshold (DEBUG):**
+```javascript
+logger.debug('Context pressure: 75%', {
+  agent_id: taskId,
+  agent_type: 'gsd-phase-researcher',
+  tokens_used: 150000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  sections_completed: 4,
+  sections_remaining: 2
+});
+```
+
+**90% threshold (WARN):**
+```javascript
+logger.warn('Context pressure: 90%', {
+  agent_id: taskId,
+  agent_type: 'gsd-phase-researcher',
+  tokens_used: 180000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  sections_completed: 5,
+  sections_remaining: 1
+});
+```
+
+</logging>
+
 <success_criteria>
 
 Research is complete when:

@@ -231,6 +231,110 @@ When unable to proceed:
 
 </structured_returns>
 
+<logging>
+
+## Agent Spawn
+
+Log agent spawn at INFO level when orchestrator creates the research synthesizer via Task().
+
+**Message format:** "Agent spawn: gsd-research-synthesizer"
+
+**Context metadata:**
+- `agent_id`: Task ID from orchestrator
+- `agent_type`: "gsd-research-synthesizer"
+- `sources_count`: Number of research files to synthesize (typically 4)
+- `model`: Model being used
+
+**Example:**
+```javascript
+logger.info('Agent spawn: gsd-research-synthesizer', {
+  agent_id: taskId,
+  agent_type: 'gsd-research-synthesizer',
+  sources_count: 4,
+  model: 'claude-sonnet-4'
+});
+```
+
+## Agent Completion
+
+Log agent completion at INFO level when SUMMARY.md is written and all research committed.
+
+**Message format:** "Agent completion: gsd-research-synthesizer - {outcome}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `agent_type`: "gsd-research-synthesizer"
+- `outcome`: "complete" or "blocked"
+- `duration_ms`: Execution time in milliseconds
+- `synthesis_quality`: "comprehensive", "partial", or "limited"
+- `roadmap_implications`: Number of phase suggestions provided
+
+**Example:**
+```javascript
+logger.info('Agent completion: gsd-research-synthesizer - complete', {
+  agent_id: taskId,
+  agent_type: 'gsd-research-synthesizer',
+  outcome: 'complete',
+  duration_ms: 35000,
+  synthesis_quality: 'comprehensive',
+  roadmap_implications: 6
+});
+```
+
+## Source Integrated
+
+Log each research file integration at DEBUG level when extracting key findings.
+
+**Message format:** "Source integrated: {source_path}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `source_path`: Path to research file
+- `sections_extracted`: Number of sections extracted from this source
+- `confidence`: Confidence level from this source
+
+**Example:**
+```javascript
+logger.debug('Source integrated: STACK.md', {
+  agent_id: taskId,
+  source_path: '.planning/research/STACK.md',
+  sections_extracted: 3,
+  confidence: 'HIGH'
+});
+```
+
+## Context Pressure
+
+Log context window pressure at thresholds during synthesis.
+
+**75% threshold (DEBUG):**
+```javascript
+logger.debug('Context pressure: 75%', {
+  agent_id: taskId,
+  agent_type: 'gsd-research-synthesizer',
+  tokens_used: 150000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  sources_integrated: 3,
+  sources_remaining: 1
+});
+```
+
+**90% threshold (WARN):**
+```javascript
+logger.warn('Context pressure: 90%', {
+  agent_id: taskId,
+  agent_type: 'gsd-research-synthesizer',
+  tokens_used: 180000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  sources_integrated: 4,
+  sources_remaining: 0
+});
+```
+
+</logging>
+
 <success_criteria>
 
 Synthesis is complete when:

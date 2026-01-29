@@ -725,6 +725,144 @@ issues:
 
 </anti_patterns>
 
+<logging>
+
+## Agent Spawn
+
+Log agent spawn at INFO level when orchestrator creates the plan checker via Task().
+
+**Message format:** "Agent spawn: gsd-plan-checker"
+
+**Context metadata:**
+- `agent_id`: Task ID from orchestrator
+- `agent_type`: "gsd-plan-checker"
+- `phase`: Phase number being checked
+- `plans_count`: Number of PLAN.md files in phase directory
+- `model`: Model being used (e.g., "claude-sonnet-4")
+
+**Example:**
+```javascript
+logger.info('Agent spawn: gsd-plan-checker', {
+  agent_id: taskId,
+  agent_type: 'gsd-plan-checker',
+  phase: '03',
+  plans_count: 2,
+  model: 'claude-sonnet-4'
+});
+```
+
+## Agent Completion
+
+Log agent completion at INFO level when verification finishes (passed or issues found).
+
+**Message format:** "Agent completion: gsd-plan-checker - {outcome}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `agent_type`: "gsd-plan-checker"
+- `outcome`: "passed" or "issues_found"
+- `duration_ms`: Execution time in milliseconds
+- `issues_found`: Number of issues detected
+- `blockers`: Count of blocker-severity issues
+- `warnings`: Count of warning-severity issues
+
+**Example:**
+```javascript
+logger.info('Agent completion: gsd-plan-checker - issues_found', {
+  agent_id: taskId,
+  agent_type: 'gsd-plan-checker',
+  outcome: 'issues_found',
+  duration_ms: 12500,
+  issues_found: 3,
+  blockers: 1,
+  warnings: 2
+});
+```
+
+## Plan Analyzed
+
+Log each plan analysis at DEBUG level when completing dimension checks for a plan.
+
+**Message format:** "Plan analyzed: {plan_id} - {dimension}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `plan_id`: Plan identifier (e.g., "03-01")
+- `dimension`: Which dimension was checked (requirement_coverage, task_completeness, dependency_correctness, key_links_planned, scope_sanity, verification_derivation)
+- `status`: "passed" or "failed"
+- `issues_count`: Number of issues found in this dimension
+
+**Example:**
+```javascript
+logger.debug('Plan analyzed: 03-01 - task_completeness', {
+  agent_id: taskId,
+  plan_id: '03-01',
+  dimension: 'task_completeness',
+  status: 'failed',
+  issues_count: 1
+});
+```
+
+## Issue Detected
+
+Log each issue detected at INFO level when a verification dimension fails.
+
+**Message format:** "Issue detected: {dimension} - {severity}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `plan_id`: Plan where issue was found (null for phase-level issues)
+- `dimension`: Dimension that failed
+- `severity`: "blocker", "warning", or "info"
+- `description`: Brief description of the issue
+- `fix_hint`: Suggested fix (if available)
+
+**Example:**
+```javascript
+logger.info('Issue detected: task_completeness - blocker', {
+  agent_id: taskId,
+  plan_id: '03-01',
+  dimension: 'task_completeness',
+  severity: 'blocker',
+  description: 'Task 2 missing <verify> element',
+  fix_hint: 'Add verification command for build output'
+});
+```
+
+## Context Pressure
+
+Log context window pressure at thresholds to monitor token usage.
+
+**75% threshold (DEBUG):**
+```javascript
+logger.debug('Context pressure: 75%', {
+  agent_id: taskId,
+  agent_type: 'gsd-plan-checker',
+  tokens_used: 150000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  plans_analyzed: 1,
+  plans_remaining: 1
+});
+```
+
+**90% threshold (WARN):**
+```javascript
+logger.warn('Context pressure: 90%', {
+  agent_id: taskId,
+  agent_type: 'gsd-plan-checker',
+  tokens_used: 180000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  plans_analyzed: 2,
+  plans_remaining: 0
+});
+```
+
+Log completion snapshot regardless of pressure level to track actual usage.
+
+</logging>
+
 <success_criteria>
 
 Plan verification complete when:

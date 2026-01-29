@@ -837,6 +837,116 @@ When research cannot proceed:
 
 </structured_returns>
 
+<logging>
+
+## Agent Spawn
+
+Log agent spawn at INFO level when orchestrator creates the project researcher via Task().
+
+**Message format:** "Agent spawn: gsd-project-researcher"
+
+**Context metadata:**
+- `agent_id`: Task ID from orchestrator
+- `agent_type`: "gsd-project-researcher"
+- `project_type`: Type of product being researched
+- `domain_keywords`: Key technologies/concepts to research
+- `research_mode`: "ecosystem", "feasibility", or "comparison"
+- `model`: Model being used
+
+**Example:**
+```javascript
+logger.info('Agent spawn: gsd-project-researcher', {
+  agent_id: taskId,
+  agent_type: 'gsd-project-researcher',
+  project_type: 'web_app',
+  domain_keywords: ['authentication', 'real-time', 'WebSocket'],
+  research_mode: 'ecosystem',
+  model: 'claude-sonnet-4'
+});
+```
+
+## Agent Completion
+
+Log agent completion at INFO level when all research files are written.
+
+**Message format:** "Agent completion: gsd-project-researcher - {outcome}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `agent_type`: "gsd-project-researcher"
+- `outcome`: "complete" or "blocked"
+- `duration_ms`: Execution time in milliseconds
+- `files_produced`: Array of file names created
+- `confidence`: Overall research confidence (HIGH/MEDIUM/LOW)
+
+**Example:**
+```javascript
+logger.info('Agent completion: gsd-project-researcher - complete', {
+  agent_id: taskId,
+  agent_type: 'gsd-project-researcher',
+  outcome: 'complete',
+  duration_ms: 120000,
+  files_produced: ['STACK.md', 'FEATURES.md', 'ARCHITECTURE.md', 'PITFALLS.md'],
+  confidence: 'MEDIUM'
+});
+```
+
+## Research Source
+
+Log each research source query at DEBUG level to track information gathering.
+
+**Message format:** "Research source: {source_type}"
+
+**Context metadata:**
+- `agent_id`: Task ID
+- `source_type`: "context7", "official_docs", "web_search", "training_data"
+- `query`: Search query or topic
+- `success`: Boolean indicating if useful information was found
+- `library_id`: (if Context7) Library identifier
+
+**Example:**
+```javascript
+logger.debug('Research source: web_search', {
+  agent_id: taskId,
+  source_type: 'web_search',
+  query: 'Next.js best practices 2026',
+  success: true,
+  results_count: 10
+});
+```
+
+## Context Pressure
+
+Log context window pressure at thresholds during research.
+
+**75% threshold (DEBUG):**
+```javascript
+logger.debug('Context pressure: 75%', {
+  agent_id: taskId,
+  agent_type: 'gsd-project-researcher',
+  tokens_used: 150000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  files_completed: 2,
+  files_remaining: 2
+});
+```
+
+**90% threshold (WARN):**
+```javascript
+logger.warn('Context pressure: 90%', {
+  agent_id: taskId,
+  agent_type: 'gsd-project-researcher',
+  tokens_used: 180000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  files_completed: 3,
+  files_remaining: 1
+});
+```
+
+</logging>
+
 <success_criteria>
 
 Research is complete when:
