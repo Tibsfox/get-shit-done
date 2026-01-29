@@ -78,73 +78,81 @@ Generate 3-4 **phase-specific** gray areas, not generic categories.
 
 <logging>
 
-## Log Events
+## Logging Specifications for Orchestrator
 
 Context gathering sessions track exploration depth and decision capture. Log key events for understanding context quality.
 
-### 1. Discussion Start
+### 1. Discussion Start (INFO level)
 
-**Level:** INFO (3)
-**When:** Context discussion session begins
-**Purpose:** Record context gathering lifecycle for audit trail
+Log when context discussion session begins to record context gathering lifecycle for audit trail.
 
-**Message Format:**
-```
-Discussion started for phase {phase}: {N} gray areas identified
-```
+**Message format:** "Discussion started for phase {phase}: {N} gray areas identified"
 
-**Context:**
+**Context to include:**
+- `event`: "discussion.start"
+- `phase`: Phase identifier (e.g., "05-workflow-integration")
+- `gray_areas_count`: Number of gray areas identified
+- `context_exists`: Whether CONTEXT.md already exists (boolean)
+
+**Example code:**
+
 ```javascript
-{
-  event: "discussion.start",
-  phase: "05-workflow-integration",
-  gray_areas_count: 4,
-  context_exists: false
-}
+logger.info(`Discussion started for phase ${phase}: ${grayAreasCount} gray areas identified`, {
+  event: 'discussion.start',
+  phase: phase,
+  gray_areas_count: grayAreasCount,
+  context_exists: contextExists
+});
 ```
 
-### 2. Area Deep-Dive
+### 2. Area Deep-Dive (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** User selects area to discuss, completes exploration
-**Purpose:** Track discussion depth and user engagement
+Log when user selects area to discuss and completes exploration to track discussion depth and user engagement.
 
-**Message Format:**
-```
-Deep-dive complete: {area_name} ({N} questions asked)
-```
+**Message format:** "Deep-dive complete: {area_name} ({N} questions asked)"
 
-**Context:**
+**Context to include:**
+- `event`: "discussion.area_complete"
+- `phase`: Phase identifier
+- `area_name`: Name of gray area discussed
+- `questions_asked`: Number of questions asked during deep-dive
+- `user_satisfied`: Whether user was satisfied with depth (boolean)
+
+**Example code:**
+
 ```javascript
-{
-  event: "discussion.area_complete",
-  phase: "05-workflow-integration",
-  area_name: "Session lifecycle logging",
-  questions_asked: 8,
-  user_satisfied: true
-}
+logger.debug(`Deep-dive complete: ${areaName} (${questionsAsked} questions asked)`, {
+  event: 'discussion.area_complete',
+  phase: phase,
+  area_name: areaName,
+  questions_asked: questionsAsked,
+  user_satisfied: userSatisfied
+});
 ```
 
-### 3. Context Creation
+### 3. Context Creation (INFO level)
 
-**Level:** INFO (3)
-**When:** CONTEXT.md written with discussion results
-**Purpose:** Record context quality and coverage
+Log when CONTEXT.md is written with discussion results to record context quality and coverage.
 
-**Message Format:**
-```
-Context created for phase {phase}: {N} areas discussed, {M} decisions captured
-```
+**Message format:** "Context created for phase {phase}: {N} areas discussed, {M} decisions captured"
 
-**Context:**
+**Context to include:**
+- `event`: "discussion.complete"
+- `phase`: Phase identifier
+- `areas_discussed`: Number of areas discussed
+- `duration_ms`: Discussion duration in milliseconds
+- `decisions_captured`: Number of decisions captured
+
+**Example code:**
+
 ```javascript
-{
-  event: "discussion.complete",
-  phase: "05-workflow-integration",
-  areas_discussed: 3,
-  duration_ms: 847000,
-  decisions_captured: 12
-}
+logger.info(`Context created for phase ${phase}: ${areasDiscussed} areas discussed, ${decisionsCaptured} decisions captured`, {
+  event: 'discussion.complete',
+  phase: phase,
+  areas_discussed: areasDiscussed,
+  duration_ms: duration,
+  decisions_captured: decisionsCaptured
+});
 ```
 
 </logging>

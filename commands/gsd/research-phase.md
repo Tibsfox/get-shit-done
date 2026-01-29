@@ -193,72 +193,79 @@ Task(
 
 <logging>
 
-## Log Events
+## Logging Specifications for Orchestrator
 
 Research sessions track investigation lifecycle and research quality. Log key events for understanding research outcomes.
 
-### 1. Research Start
+### 1. Research Start (INFO level)
 
-**Level:** INFO (3)
-**When:** Research session begins
-**Purpose:** Record research lifecycle for audit trail
+Log when research session begins to record research lifecycle for audit trail.
 
-**Message Format:**
-```
-Research started for phase {phase} [{mode}]
-```
+**Message format:** "Research started for phase {phase} [{mode}]"
 
-**Context:**
+**Context to include:**
+- `event`: "research.start"
+- `phase`: Phase identifier (e.g., "05-workflow-integration")
+- `mode`: Research mode (e.g., "ecosystem", "feasibility")
+- `existing_research`: Whether RESEARCH.md already exists (boolean)
+
+**Example code:**
+
 ```javascript
-{
-  event: "research.start",
-  phase: "05-workflow-integration",
-  mode: "ecosystem",
-  existing_research: false
-}
+logger.info(`Research started for phase ${phase} [${mode}]`, {
+  event: 'research.start',
+  phase: phase,
+  mode: mode,
+  existing_research: existingResearch
+});
 ```
 
-### 2. Researcher Spawn
+### 2. Researcher Spawn (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Spawning gsd-phase-researcher agent
-**Purpose:** Track researcher agent spawning for correlation
+Log when spawning gsd-phase-researcher agent to track researcher agent spawning for correlation.
 
-**Message Format:**
-```
-Spawning researcher agent for phase {phase}
-```
+**Message format:** "Spawning researcher agent for phase {phase}"
 
-**Context:**
+**Context to include:**
+- `event`: "agent.spawn"
+- `agent_type`: "gsd-phase-researcher"
+- `phase`: Phase identifier
+- `model`: Claude model being used
+
+**Example code:**
+
 ```javascript
-{
-  event: "agent.spawn",
-  agent_type: "gsd-phase-researcher",
-  phase: "05-workflow-integration",
-  model: "claude-sonnet-4-5-20250929"
-}
+logger.debug(`Spawning researcher agent for phase ${phase}`, {
+  event: 'agent.spawn',
+  agent_type: 'gsd-phase-researcher',
+  phase: phase,
+  model: researcherModel
+});
 ```
 
-### 3. Research Complete
+### 3. Research Complete (INFO level)
 
-**Level:** INFO (3)
-**When:** Research agent completes investigation
-**Purpose:** Record research quality and outcomes
+Log when research agent completes investigation to record research quality and outcomes.
 
-**Message Format:**
-```
-Research complete for phase {phase}: {outcome}
-```
+**Message format:** "Research complete for phase {phase}: {outcome}"
 
-**Context:**
+**Context to include:**
+- `event`: "research.complete"
+- `phase`: Phase identifier
+- `duration_ms`: Research duration in milliseconds
+- `outcome`: Research outcome (e.g., "comprehensive", "partial", "inconclusive")
+- `confidence`: Confidence level (e.g., "high", "medium", "low")
+
+**Example code:**
+
 ```javascript
-{
-  event: "research.complete",
-  phase: "05-workflow-integration",
-  duration_ms: 1456000,
-  outcome: "comprehensive",
-  confidence: "high"
-}
+logger.info(`Research complete for phase ${phase}: ${outcome}`, {
+  event: 'research.complete',
+  phase: phase,
+  duration_ms: duration,
+  outcome: outcome,
+  confidence: confidence
+});
 ```
 
 </logging>

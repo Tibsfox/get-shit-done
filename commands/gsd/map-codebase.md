@@ -50,94 +50,104 @@ Check for .planning/STATE.md - loads context if project already initialized
 
 <logging>
 
-## Log Events
+## Logging Specifications for Orchestrator
 
 Codebase mapping spawns parallel mapper agents. Log events must correlate agents for tracking parallel execution.
 
-### 1. Mapping Start
+### 1. Mapping Start (INFO level)
 
-**Level:** INFO (3)
-**When:** Mapping session begins
-**Purpose:** Record codebase mapping lifecycle
+Log when mapping session begins to record codebase mapping lifecycle.
 
-**Message Format:**
-```
-Codebase mapping started [focus: {area}]
-```
+**Message format:** "Codebase mapping started [focus: {area}]"
 
-**Context:**
+**Context to include:**
+- `event`: "mapping.start"
+- `focus_area`: Focus area (e.g., "api") or null if full mapping
+- `existing_map`: Whether .planning/codebase/ already exists (boolean)
+
+**Example code:**
+
 ```javascript
-{
-  event: "mapping.start",
-  focus_area: "api",  // or null if full mapping
-  existing_map: false
-}
+logger.info(`Codebase mapping started [focus: ${focusArea || 'full'}]`, {
+  event: 'mapping.start',
+  focus_area: focusArea,
+  existing_map: existingMap
+});
 ```
 
-### 2. Mapper Spawn
+### 2. Mapper Spawn (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Spawning each parallel gsd-codebase-mapper agent
-**Purpose:** Track parallel agent correlation (similar to wave execution)
+Log when spawning each parallel gsd-codebase-mapper agent to track parallel agent correlation (similar to wave execution).
 
-**Message Format:**
-```
-Spawning mapper agent {N}: {focus}
-```
+**Message format:** "Spawning mapper agent {N}: {focus}"
 
-**Context:**
+**Context to include:**
+- `event`: "agent.spawn"
+- `agent_id`: Unique agent identifier for correlation (e.g., "mapper-tech-20260129-084523")
+- `agent_type`: "gsd-codebase-mapper"
+- `focus`: Focus area (e.g., "tech", "arch", "quality", "concerns")
+- `model`: Claude model being used
+
+**Example code:**
+
 ```javascript
-{
-  event: "agent.spawn",
-  agent_id: "mapper-tech-20260129-084523",
-  agent_type: "gsd-codebase-mapper",
-  focus: "tech",
-  model: "claude-sonnet-4-5-20250929"
-}
+logger.debug(`Spawning mapper agent ${agentNumber}: ${focus}`, {
+  event: 'agent.spawn',
+  agent_id: agentId,
+  agent_type: 'gsd-codebase-mapper',
+  focus: focus,
+  model: mapperModel
+});
 ```
 
-### 3. Mapper Complete
+### 3. Mapper Complete (DEBUG level)
 
-**Level:** DEBUG (4)
-**When:** Each mapper agent completes
-**Purpose:** Track individual mapper outcomes for correlation
+Log when each mapper agent completes to track individual mapper outcomes for correlation.
 
-**Message Format:**
-```
-Mapper agent {N} complete: {focus} ({M} documents written)
-```
+**Message format:** "Mapper agent {N} complete: {focus} ({M} documents written)"
 
-**Context:**
+**Context to include:**
+- `event`: "agent.complete"
+- `agent_id`: Agent identifier (matches spawn event)
+- `focus`: Focus area
+- `documents_written`: Number of documents written
+- `duration_ms`: Mapper duration in milliseconds
+
+**Example code:**
+
 ```javascript
-{
-  event: "agent.complete",
-  agent_id: "mapper-tech-20260129-084523",
-  focus: "tech",
-  documents_written: 2,
-  duration_ms: 892000
-}
+logger.debug(`Mapper agent ${agentNumber} complete: ${focus} (${documentsWritten} documents written)`, {
+  event: 'agent.complete',
+  agent_id: agentId,
+  focus: focus,
+  documents_written: documentsWritten,
+  duration_ms: duration
+});
 ```
 
-### 4. Mapping Complete
+### 4. Mapping Complete (INFO level)
 
-**Level:** INFO (3)
-**When:** All mapper agents complete
-**Purpose:** Record overall mapping session results
+Log when all mapper agents complete to record overall mapping session results.
 
-**Message Format:**
-```
-Codebase mapping complete: {N}/{N} agents completed, {M} documents written
-```
+**Message format:** "Codebase mapping complete: {N}/{N} agents completed, {M} documents written"
 
-**Context:**
+**Context to include:**
+- `event`: "mapping.complete"
+- `agents_total`: Total number of mapper agents
+- `agents_completed`: Number of completed mapper agents
+- `documents_total`: Total documents written
+- `total_duration_ms`: Total mapping duration in milliseconds
+
+**Example code:**
+
 ```javascript
-{
-  event: "mapping.complete",
-  agents_total: 4,
-  agents_completed: 4,
-  documents_total: 7,
-  total_duration_ms: 1456000
-}
+logger.info(`Codebase mapping complete: ${agentsCompleted}/${agentsTotal} agents completed, ${documentsTotal} documents written`, {
+  event: 'mapping.complete',
+  agents_total: agentsTotal,
+  agents_completed: agentsCompleted,
+  documents_total: documentsTotal,
+  total_duration_ms: totalDuration
+});
 ```
 
 </logging>
