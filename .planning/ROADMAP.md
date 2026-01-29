@@ -74,7 +74,7 @@ Plans:
 - [x] 03-02-PLAN.md — Add logging sections to remaining agents (researchers, debugger, etc.) (Wave 1)
 
 ### Phase 4: Verification Logging
-**Goal**: Implement detailed logging of verification results, including artifact checks, gap detection, and link verification.
+**Goal**: Enhance gsd-verifier.md logging with re-verification context and create reusable verification logging patterns for the references directory.
 **Depends on**: Phase 3
 **Requirements**: VERIFY-01 through VERIFY-05
 **Success Criteria** (what must be TRUE):
@@ -83,11 +83,11 @@ Plans:
   3. Key link verification results appear with from/to/via details
   4. Gap detection logs each gap with truth, status, and missing items
   5. Overall verification outcome logged at INFO level with score
-**Plans**: 2 plans
+**Plans**: 2 plans in 1 wave
 
 Plans:
-- [ ] 04-01: Update gsd-verifier.md with comprehensive logging specs
-- [ ] 04-02: Create verification logging reference patterns in references/
+- [ ] 04-01-PLAN.md — Enhance gsd-verifier.md logging with re-verification mode and audit trail patterns (Wave 1)
+- [ ] 04-02-PLAN.md — Create verification logging reference patterns in references/ (Wave 1)
 
 ### Phase 5: Workflow Integration
 **Goal**: Integrate logging specifications into all workflow orchestration files so phase/plan/wave execution is fully observable.
@@ -131,7 +131,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Foundation | 4/4 | Complete | 2026-01-28 |
 | 2. Hook Integration | 3/3 | Complete | 2026-01-29 |
 | 3. Agent Instrumentation | 2/2 | Complete | 2026-01-29 |
-| 4. Verification Logging | 0/2 | Not started | - |
+| 4. Verification Logging | 0/2 | Ready | - |
 | 5. Workflow Integration | 0/2 | Not started | - |
 | 6. Documentation | 0/2 | Not started | - |
 
@@ -170,8 +170,8 @@ Phase 3: Agent Instrumentation
            v
 Phase 4: Verification Logging
     |
-    +-- agents/gsd-verifier.md (enhanced)
-    +-- references/verification-logging.md
+    +-- agents/gsd-verifier.md (enhanced) [Wave 1]
+    +-- get-shit-done/references/verification-logging.md (new) [Wave 1]
            |
            v
 Phase 5: Workflow Integration
@@ -214,6 +214,7 @@ Phase 6: Documentation
 | agents/gsd-debugger.md | Modify | 3 |
 | agents/gsd-integration-checker.md | Modify | 3 |
 | agents/gsd-research-synthesizer.md | Modify | 3 |
+| get-shit-done/references/verification-logging.md | Create | 4 |
 | get-shit-done/workflows/execute-phase.md | Modify | 5 |
 | get-shit-done/workflows/execute-plan.md | Modify | 5 |
 | get-shit-done/workflows/plan-phase.md | Modify | 5 |
