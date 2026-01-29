@@ -770,6 +770,224 @@ Include commits from both task execution and metadata commit.
 If you were a continuation agent, include ALL commits (previous + new).
 </completion_format>
 
+<logging>
+
+## Logging Specifications for Orchestrator
+
+The orchestrator should log the following lifecycle events during gsd-executor agent execution:
+
+### 1. Agent Spawn (INFO level)
+
+Log when the executor agent is spawned, capturing the execution context.
+
+**Message format:** "Agent spawn: gsd-executor"
+
+**Context to include:**
+- `agent_id`: Unique identifier for this agent instance
+- `agent_type`: "gsd-executor"
+- `phase`: Phase identifier (e.g., "03-agent-instrumentation")
+- `plan`: Plan identifier (e.g., "03-01")
+- `task`: Task description if spawned for specific task continuation
+- `model`: Claude model being used (sonnet-4-5, opus-4-5, etc.)
+- `estimated_duration`: Expected execution time if available
+- `parent_agent_id`: ID of spawning agent if this is a subagent
+- `wave`: Execution wave number
+
+**Example code:**
+
+```javascript
+logger.info('Agent spawn: gsd-executor', {
+  agent_id: agentId,
+  agent_type: 'gsd-executor',
+  phase: planMeta.phase,
+  plan: planMeta.plan,
+  model: 'claude-sonnet-4-5',
+  estimated_duration: '15-30min',
+  wave: planMeta.wave
+});
+```
+
+### 2. Agent Completion (INFO level)
+
+Log when the executor completes execution, whether successful, failed, or partial.
+
+**Message format:** "Agent completion: gsd-executor"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `outcome`: "success" | "failure" | "partial"
+- `duration_ms`: Actual execution duration in milliseconds
+- `tasks_completed`: Number of tasks completed
+- `tasks_total`: Total tasks in plan
+- `artifacts_created`: Array of created artifacts (SUMMARY.md path, key files)
+- `deviations_applied`: Count of deviations (Rules 1-4) applied during execution
+- `checkpoints_hit`: Count of checkpoints encountered
+- `exit_status`: Specific exit status (completed | checkpoint_pause | error)
+
+**Example code:**
+
+```javascript
+logger.info('Agent completion: gsd-executor', {
+  agent_id: agentId,
+  outcome: 'success',
+  duration_ms: executionEnd - executionStart,
+  tasks_completed: completedTasks.length,
+  tasks_total: planTasks.length,
+  artifacts_created: [summaryPath, ...modifiedFiles],
+  deviations_applied: deviations.length,
+  checkpoints_hit: checkpoints.length,
+  exit_status: 'completed'
+});
+```
+
+### 3. Checkpoint Pause (INFO level)
+
+Log when execution pauses at a checkpoint awaiting user interaction.
+
+**Message format:** "Checkpoint pause"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `checkpoint_type`: "human-verify" | "decision" | "human-action"
+- `task_current`: Current task number/name
+- `tasks_completed`: Number of tasks completed before pause
+- `tasks_total`: Total tasks in plan
+- `awaiting`: Description of what user needs to provide
+- `progress_snapshot`: Current state for continuation
+
+**Example code:**
+
+```javascript
+logger.info('Checkpoint pause', {
+  agent_id: agentId,
+  checkpoint_type: checkpointTask.type,
+  task_current: currentTaskNumber,
+  tasks_completed: completedTasks.length,
+  tasks_total: planTasks.length,
+  awaiting: checkpointTask.resume_signal,
+  progress_snapshot: {
+    completed_commits: completedTasks.map(t => t.commit),
+    modified_files: filesModified
+  }
+});
+```
+
+### 4. Checkpoint Resume (INFO level)
+
+Log when execution resumes after user interaction at a checkpoint.
+
+**Message format:** "Checkpoint resume"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier (new agent for continuation)
+- `checkpoint_type`: Type of checkpoint that was resolved
+- `user_response`: What the user provided (sanitized if needed)
+- `validation_status`: Whether user input validated successfully
+
+**Example code:**
+
+```javascript
+logger.info('Checkpoint resume', {
+  agent_id: newAgentId,
+  checkpoint_type: previousCheckpointType,
+  user_response: userResponse,
+  validation_status: 'valid'
+});
+```
+
+### 5. Deviation Application (WARN for Rules 1-3, INFO for Rule 4)
+
+Log when a deviation from the plan is applied using the deviation rules.
+
+**Message format:** "Deviation applied: Rule {rule_number}"
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `rule_number`: 1 | 2 | 3 | 4
+- `rule_type`: "bug_fix" | "missing_critical" | "blocking_issue" | "architectural_decision"
+- `task_current`: Task being executed when deviation discovered
+- `trigger`: What triggered the deviation (description of issue found)
+- `action_taken`: What was done to address it
+- `files_affected`: Array of files modified by deviation
+- `in_scope`: Boolean - whether deviation is within original scope
+- `impact`: Assessment of change impact
+
+**Example code:**
+
+```javascript
+// Rules 1-3: WARN level (automatic fixes)
+logger.warn('Deviation applied: Rule 1', {
+  agent_id: agentId,
+  rule_number: 1,
+  rule_type: 'bug_fix',
+  task_current: currentTask.name,
+  trigger: 'Found null pointer exception in validation logic',
+  action_taken: 'Added null check before property access',
+  files_affected: ['src/utils/validator.ts'],
+  in_scope: true,
+  impact: 'low'
+});
+
+// Rule 4: INFO level (architectural decision needed)
+logger.info('Deviation applied: Rule 4', {
+  agent_id: agentId,
+  rule_number: 4,
+  rule_type: 'architectural_decision',
+  task_current: currentTask.name,
+  trigger: 'Need to add message queue for async processing',
+  action_taken: 'Paused execution for user decision',
+  files_affected: [],
+  in_scope: false,
+  impact: 'high'
+});
+```
+
+### 6. Context Pressure (DEBUG at 75%, WARN at 90%+)
+
+Log when context window usage reaches warning thresholds.
+
+**Message format:** "Context pressure warning" (at 75%) or "Context pressure critical" (at 90%+)
+
+**Context to include:**
+- `agent_id`: Agent instance identifier
+- `threshold`: "warning" (75%) | "critical" (90%+)
+- `tokens_used`: Absolute token count used
+- `tokens_total`: Total context window size
+- `tokens_remaining`: Remaining tokens available
+- `percent_used`: Percentage of context used
+- `rate_per_turn`: Average tokens consumed per turn
+- `estimated_turns_remaining`: Estimated turns before context exhausted
+
+**Example code:**
+
+```javascript
+// At 75% threshold
+logger.debug('Context pressure warning', {
+  agent_id: agentId,
+  threshold: 'warning',
+  tokens_used: 150000,
+  tokens_total: 200000,
+  tokens_remaining: 50000,
+  percent_used: 75,
+  rate_per_turn: 5000,
+  estimated_turns_remaining: 10
+});
+
+// At 90%+ threshold
+logger.warn('Context pressure critical', {
+  agent_id: agentId,
+  threshold: 'critical',
+  tokens_used: 180000,
+  tokens_total: 200000,
+  tokens_remaining: 20000,
+  percent_used: 90,
+  rate_per_turn: 5000,
+  estimated_turns_remaining: 4
+});
+```
+
+</logging>
+
 <success_criteria>
 Plan execution complete when:
 
