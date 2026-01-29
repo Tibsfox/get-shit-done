@@ -66,12 +66,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Integration
 
-- [ ] **INTEG-01**: Session initialization hook (gsd-log-init.js)
-- [ ] **INTEG-02**: Update gsd-check-update.js with logging
-- [ ] **INTEG-03**: Update gsd-statusline.js with logging
+- [x] **INTEG-01**: Session initialization hook (gsd-log-init.js)
+- [x] **INTEG-02**: Update gsd-check-update.js with logging
+- [x] **INTEG-03**: Update gsd-statusline.js with logging
 - [ ] **INTEG-04**: Logging specifications in all agent markdown files
 - [ ] **INTEG-05**: Logging integration in workflow orchestration files
-- [ ] **INTEG-06**: Install.js registers logging hook and creates log directory
+- [x] **INTEG-06**: Install.js registers logging hook and creates log directory
 
 ### Documentation
 
@@ -143,10 +143,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TRACE-02 | Phase 1 | Complete |
 | TRACE-03 | Phase 1 | Complete |
 | TRACE-04 | Phase 1 | Complete |
-| INTEG-01 | Phase 2 | Pending |
-| INTEG-02 | Phase 2 | Pending |
-| INTEG-03 | Phase 2 | Pending |
-| INTEG-06 | Phase 2 | Pending |
+| INTEG-01 | Phase 2 | Complete |
+| INTEG-02 | Phase 2 | Complete |
+| INTEG-03 | Phase 2 | Complete |
+| INTEG-06 | Phase 2 | Complete |
 | AGENT-01 | Phase 3 | Pending |
 | AGENT-02 | Phase 3 | Pending |
 | AGENT-03 | Phase 3 | Pending |
