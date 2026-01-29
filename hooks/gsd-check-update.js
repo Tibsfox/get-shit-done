@@ -7,6 +7,15 @@ const path = require('path');
 const os = require('os');
 const { spawn } = require('child_process');
 
+// Import logger - may not be initialized if this runs before gsd-log-init
+let logger = null;
+try {
+  const { getLogger } = require('../lib');
+  logger = getLogger();
+} catch (e) {
+  // Logger not available - continue without logging
+}
+
 const homeDir = os.homedir();
 const cwd = process.cwd();
 const cacheDir = path.join(homeDir, '.claude', 'cache');
@@ -16,10 +25,24 @@ const cacheFile = path.join(cacheDir, 'gsd-update-check.json');
 const projectVersionFile = path.join(cwd, '.claude', 'get-shit-done', 'VERSION');
 const globalVersionFile = path.join(homeDir, '.claude', 'get-shit-done', 'VERSION');
 
+// Helper function for safe logging
+function logDebug(message, context = {}) {
+  if (logger && !logger.isOff) {
+    logger.debug(message, { ...context, hook: 'check-update' });
+  }
+}
+
 // Ensure cache directory exists
 if (!fs.existsSync(cacheDir)) {
   fs.mkdirSync(cacheDir, { recursive: true });
 }
+
+// Log update check initiation at DEBUG level
+logDebug('Update check initiated', {
+  cacheFile,
+  projectVersionFile,
+  globalVersionFile
+});
 
 // Run check in background (spawn background process, windowsHide prevents console flash)
 const child = spawn(process.execPath, ['-e', `
@@ -57,5 +80,8 @@ const child = spawn(process.execPath, ['-e', `
   stdio: 'ignore',
   windowsHide: true
 });
+
+// Log that background check was spawned
+logDebug('Update check spawned in background');
 
 child.unref();
