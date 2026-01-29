@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Core logger module, syslog transport, configuration, timing utilities
 - [x] **Phase 2: Hook Integration** - Session init hook, update existing hooks with logging
-- [ ] **Phase 3: Agent Instrumentation** - Add logging specs to all agent markdown files
+- [x] **Phase 3: Agent Instrumentation** - Add logging specs to all agent markdown files
 - [ ] **Phase 4: Verification Logging** - Log verification results, gaps, artifact checks
 - [ ] **Phase 5: Workflow Integration** - Integrate logging into workflow orchestration
 - [ ] **Phase 6: Documentation** - Reference guide, settings output, troubleshooting guide
@@ -70,8 +70,8 @@ Plans:
 **Plans**: 2 plans in 1 wave
 
 Plans:
-- [ ] 03-01-PLAN.md — Add logging sections to core agents (executor, verifier, planner) (Wave 1)
-- [ ] 03-02-PLAN.md — Add logging sections to remaining agents (researchers, debugger, etc.) (Wave 1)
+- [x] 03-01-PLAN.md — Add logging sections to core agents (executor, verifier, planner) (Wave 1)
+- [x] 03-02-PLAN.md — Add logging sections to remaining agents (researchers, debugger, etc.) (Wave 1)
 
 ### Phase 4: Verification Logging
 **Goal**: Implement detailed logging of verification results, including artifact checks, gap detection, and link verification.
@@ -130,7 +130,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-01-28 |
 | 2. Hook Integration | 3/3 | Complete | 2026-01-29 |
-| 3. Agent Instrumentation | 0/2 | Not started | - |
+| 3. Agent Instrumentation | 2/2 | Complete | 2026-01-29 |
 | 4. Verification Logging | 0/2 | Not started | - |
 | 5. Workflow Integration | 0/2 | Not started | - |
 | 6. Documentation | 0/2 | Not started | - |

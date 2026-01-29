@@ -26,11 +26,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Agent Operations
 
-- [ ] **AGENT-01**: Log agent spawn events with model, plan, and context metadata
-- [ ] **AGENT-02**: Log agent completion with duration, task count, and outcome
-- [ ] **AGENT-03**: Log checkpoint pauses with type, progress, and awaited action
-- [ ] **AGENT-04**: Log deviation rule applications with rule, description, files
-- [ ] **AGENT-05**: Log context pressure (token usage) at configurable intervals
+- [x] **AGENT-01**: Log agent spawn events with model, plan, and context metadata
+- [x] **AGENT-02**: Log agent completion with duration, task count, and outcome
+- [x] **AGENT-03**: Log checkpoint pauses with type, progress, and awaited action
+- [x] **AGENT-04**: Log deviation rule applications with rule, description, files
+- [x] **AGENT-05**: Log context pressure (token usage) at configurable intervals
 
 ### Verification Results
 
@@ -69,7 +69,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INTEG-01**: Session initialization hook (gsd-log-init.js)
 - [x] **INTEG-02**: Update gsd-check-update.js with logging
 - [x] **INTEG-03**: Update gsd-statusline.js with logging
-- [ ] **INTEG-04**: Logging specifications in all agent markdown files
+- [x] **INTEG-04**: Logging specifications in all agent markdown files
 - [ ] **INTEG-05**: Logging integration in workflow orchestration files
 - [x] **INTEG-06**: Install.js registers logging hook and creates log directory
 
@@ -147,12 +147,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTEG-02 | Phase 2 | Complete |
 | INTEG-03 | Phase 2 | Complete |
 | INTEG-06 | Phase 2 | Complete |
-| AGENT-01 | Phase 3 | Pending |
-| AGENT-02 | Phase 3 | Pending |
-| AGENT-03 | Phase 3 | Pending |
-| AGENT-04 | Phase 3 | Pending |
-| AGENT-05 | Phase 3 | Pending |
-| INTEG-04 | Phase 3 | Pending |
+| AGENT-01 | Phase 3 | Complete |
+| AGENT-02 | Phase 3 | Complete |
+| AGENT-03 | Phase 3 | Complete |
+| AGENT-04 | Phase 3 | Complete |
+| AGENT-05 | Phase 3 | Complete |
+| INTEG-04 | Phase 3 | Complete |
 | VERIFY-01 | Phase 4 | Pending |
 | VERIFY-02 | Phase 4 | Pending |
 | VERIFY-03 | Phase 4 | Pending |
