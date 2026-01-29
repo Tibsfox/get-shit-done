@@ -191,6 +191,78 @@ Task(
 
 </process>
 
+<logging>
+
+## Log Events
+
+Research sessions track investigation lifecycle and research quality. Log key events for understanding research outcomes.
+
+### 1. Research Start
+
+**Level:** INFO (3)
+**When:** Research session begins
+**Purpose:** Record research lifecycle for audit trail
+
+**Message Format:**
+```
+Research started for phase {phase} [{mode}]
+```
+
+**Context:**
+```javascript
+{
+  event: "research.start",
+  phase: "05-workflow-integration",
+  mode: "ecosystem",
+  existing_research: false
+}
+```
+
+### 2. Researcher Spawn
+
+**Level:** DEBUG (4)
+**When:** Spawning gsd-phase-researcher agent
+**Purpose:** Track researcher agent spawning for correlation
+
+**Message Format:**
+```
+Spawning researcher agent for phase {phase}
+```
+
+**Context:**
+```javascript
+{
+  event: "agent.spawn",
+  agent_type: "gsd-phase-researcher",
+  phase: "05-workflow-integration",
+  model: "claude-sonnet-4-5-20250929"
+}
+```
+
+### 3. Research Complete
+
+**Level:** INFO (3)
+**When:** Research agent completes investigation
+**Purpose:** Record research quality and outcomes
+
+**Message Format:**
+```
+Research complete for phase {phase}: {outcome}
+```
+
+**Context:**
+```javascript
+{
+  event: "research.complete",
+  phase: "05-workflow-integration",
+  duration_ms: 1456000,
+  outcome: "comprehensive",
+  confidence: "high"
+}
+```
+
+</logging>
+
 <success_criteria>
 - [ ] Phase validated against roadmap
 - [ ] Existing research checked

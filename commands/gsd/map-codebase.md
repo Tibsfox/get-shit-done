@@ -48,6 +48,100 @@ Check for .planning/STATE.md - loads context if project already initialized
 - Trivial codebases (<5 files)
 </when_to_use>
 
+<logging>
+
+## Log Events
+
+Codebase mapping spawns parallel mapper agents. Log events must correlate agents for tracking parallel execution.
+
+### 1. Mapping Start
+
+**Level:** INFO (3)
+**When:** Mapping session begins
+**Purpose:** Record codebase mapping lifecycle
+
+**Message Format:**
+```
+Codebase mapping started [focus: {area}]
+```
+
+**Context:**
+```javascript
+{
+  event: "mapping.start",
+  focus_area: "api",  // or null if full mapping
+  existing_map: false
+}
+```
+
+### 2. Mapper Spawn
+
+**Level:** DEBUG (4)
+**When:** Spawning each parallel gsd-codebase-mapper agent
+**Purpose:** Track parallel agent correlation (similar to wave execution)
+
+**Message Format:**
+```
+Spawning mapper agent {N}: {focus}
+```
+
+**Context:**
+```javascript
+{
+  event: "agent.spawn",
+  agent_id: "mapper-tech-20260129-084523",
+  agent_type: "gsd-codebase-mapper",
+  focus: "tech",
+  model: "claude-sonnet-4-5-20250929"
+}
+```
+
+### 3. Mapper Complete
+
+**Level:** DEBUG (4)
+**When:** Each mapper agent completes
+**Purpose:** Track individual mapper outcomes for correlation
+
+**Message Format:**
+```
+Mapper agent {N} complete: {focus} ({M} documents written)
+```
+
+**Context:**
+```javascript
+{
+  event: "agent.complete",
+  agent_id: "mapper-tech-20260129-084523",
+  focus: "tech",
+  documents_written: 2,
+  duration_ms: 892000
+}
+```
+
+### 4. Mapping Complete
+
+**Level:** INFO (3)
+**When:** All mapper agents complete
+**Purpose:** Record overall mapping session results
+
+**Message Format:**
+```
+Codebase mapping complete: {N}/{N} agents completed, {M} documents written
+```
+
+**Context:**
+```javascript
+{
+  event: "mapping.complete",
+  agents_total: 4,
+  agents_completed: 4,
+  documents_total: 7,
+  total_duration_ms: 1456000
+}
+```
+
+</logging>
+
 <process>
 1. Check if .planning/codebase/ already exists (offer to refresh or skip)
 2. Create .planning/codebase/ directory structure

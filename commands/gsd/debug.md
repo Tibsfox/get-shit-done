@@ -160,6 +160,132 @@ Task(
 
 </process>
 
+<logging>
+
+## Log Events
+
+Debug sessions track investigation lifecycle from symptom gathering through root cause diagnosis. Log key events for debugging the debugger and audit trail.
+
+### 1. Debug Session Start
+
+**Level:** INFO (3)
+**When:** Debug session begins (new or resumed)
+**Purpose:** Record investigation lifecycle for tracking active debugging work
+
+**Message Format:**
+```
+Debug session started: {issue_slug} ({active_sessions_count} active)
+```
+
+**Context:**
+```javascript
+{
+  event: "debug.session_start",
+  session_id: "debug-auth-timeout-20260129",
+  issue_slug: "auth-timeout-on-refresh",
+  trigger: "Token refresh fails with 401 after 15 minutes",
+  active_sessions_count: 2
+}
+```
+
+### 2. Symptom Gathering
+
+**Level:** DEBUG (4)
+**When:** Each symptom question answered
+**Purpose:** Track symptom collection completeness
+
+**Message Format:**
+```
+Symptom gathered: {symptom_type}
+```
+
+**Context:**
+```javascript
+{
+  event: "debug.symptom_gathered",
+  session_id: "debug-auth-timeout-20260129",
+  symptom_type: "expected_behavior",
+  response_received: true
+}
+```
+
+### 3. Debugger Spawn
+
+**Level:** DEBUG (4)
+**When:** Spawning gsd-debugger agent (initial or continuation)
+**Purpose:** Track debugger agent spawning for correlation
+
+**Message Format:**
+```
+Spawning debugger agent [{mode}]: {session_id}
+```
+
+**Context:**
+```javascript
+{
+  event: "agent.spawn",
+  agent_type: "gsd-debugger",
+  session_id: "debug-auth-timeout-20260129",
+  model: "claude-sonnet-4-5-20250929",
+  mode: "initial"  // or "continuation"
+}
+```
+
+### 4. Checkpoint Handling
+
+**Level:** INFO (3)
+**When:** Debugger agent returns checkpoint requiring user action
+**Purpose:** Track user interaction points in debugging workflow
+
+**Message Format:**
+```
+Debug checkpoint reached: {checkpoint_type}
+```
+
+**Context:**
+```javascript
+{
+  event: "debug.checkpoint",
+  session_id: "debug-auth-timeout-20260129",
+  checkpoint_type: "human-verify",
+  awaiting: "Reproduce auth timeout with network inspector open"
+}
+```
+
+### 5. Investigation Outcome
+
+**Level:** INFO (3)
+**When:** Investigation completes (root cause found or inconclusive)
+**Purpose:** Record investigation results for audit trail
+
+**Message Format:**
+```
+Debug session {outcome}: {session_id} [{hypotheses_tested} hypotheses tested]
+```
+
+**Context:**
+```javascript
+// Root cause found
+{
+  event: "debug.investigation_complete",
+  session_id: "debug-auth-timeout-20260129",
+  outcome: "root_cause_found",
+  duration_ms: 892000,
+  hypotheses_tested: 4
+}
+
+// Inconclusive
+{
+  event: "debug.investigation_complete",
+  session_id: "debug-auth-timeout-20260129",
+  outcome: "inconclusive",
+  duration_ms: 1456000,
+  hypotheses_tested: 7
+}
+```
+
+</logging>
+
 <success_criteria>
 - [ ] Active sessions checked
 - [ ] Symptoms gathered (if new)

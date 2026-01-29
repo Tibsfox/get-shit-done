@@ -112,6 +112,81 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 
 </process>
 
+<logging>
+
+## Log Events
+
+Milestone completion archives work and creates historical markers. Log key events for release tracking.
+
+### 1. Milestone Completion Start
+
+**Level:** INFO (3)
+**When:** Milestone completion operation begins
+**Purpose:** Record milestone lifecycle for audit trail
+
+**Message Format:**
+```
+Milestone completion started: v{version} [{audit_status}]
+```
+
+**Context:**
+```javascript
+{
+  event: "milestone.start",
+  version: "1.0",
+  phases_count: 6,
+  audit_status: "passed"  // or "gaps_found" or "missing"
+}
+```
+
+### 2. Archive Creation
+
+**Level:** DEBUG (4)
+**When:** Creating milestone archive files
+**Purpose:** Track archival operation for completeness verification
+
+**Message Format:**
+```
+Creating milestone archive: v{version}
+```
+
+**Context:**
+```javascript
+{
+  event: "milestone.archive",
+  version: "1.0",
+  archive_path: ".planning/milestones/v1.0-ROADMAP.md",
+  stats: {
+    phases: 6,
+    plans: 15,
+    commits: 42
+  }
+}
+```
+
+### 3. Milestone Complete
+
+**Level:** INFO (3)
+**When:** Milestone archived, tagged, and committed
+**Purpose:** Record milestone completion for release history
+
+**Message Format:**
+```
+Milestone complete: v{version} [tag: {tagged}]
+```
+
+**Context:**
+```javascript
+{
+  event: "milestone.complete",
+  version: "1.0",
+  tag_created: true,
+  duration_ms: 456000
+}
+```
+
+</logging>
+
 <success_criteria>
 
 - Milestone archived to `.planning/milestones/v{{version}}-ROADMAP.md`

@@ -38,3 +38,53 @@ The workflow handles all resumption logic including:
 6. Routing to appropriate next command
 7. Session continuity updates
    </process>
+
+<logging>
+
+## Log Events
+
+Resume operations restore session context and route to next action. Log key events for session continuity tracking.
+
+### 1. Resume Start
+
+**Level:** INFO (3)
+**When:** Resume operation begins
+**Purpose:** Record session resumption lifecycle
+
+**Message Format:**
+```
+Resume work initiated [project: {path}]
+```
+
+**Context:**
+```javascript
+{
+  event: "resume.start",
+  project_path: "/media/foxy/ai/G/gsd/get-shit-done",
+  state_exists: true,
+  checkpoints_found: 0,
+  incomplete_work_found: 1
+}
+```
+
+### 2. Resume Complete
+
+**Level:** INFO (3)
+**When:** Context restored and routing decision made
+**Purpose:** Record routing decision for workflow continuity
+
+**Message Format:**
+```
+Resume complete: routed to {command}
+```
+
+**Context:**
+```javascript
+{
+  event: "resume.complete",
+  routed_to: "/gsd:execute-phase 05",
+  context_loaded: true
+}
+```
+
+</logging>

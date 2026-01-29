@@ -76,6 +76,79 @@ Generate 3-4 **phase-specific** gray areas, not generic categories.
 - Scope expansion
 </process>
 
+<logging>
+
+## Log Events
+
+Context gathering sessions track exploration depth and decision capture. Log key events for understanding context quality.
+
+### 1. Discussion Start
+
+**Level:** INFO (3)
+**When:** Context discussion session begins
+**Purpose:** Record context gathering lifecycle for audit trail
+
+**Message Format:**
+```
+Discussion started for phase {phase}: {N} gray areas identified
+```
+
+**Context:**
+```javascript
+{
+  event: "discussion.start",
+  phase: "05-workflow-integration",
+  gray_areas_count: 4,
+  context_exists: false
+}
+```
+
+### 2. Area Deep-Dive
+
+**Level:** DEBUG (4)
+**When:** User selects area to discuss, completes exploration
+**Purpose:** Track discussion depth and user engagement
+
+**Message Format:**
+```
+Deep-dive complete: {area_name} ({N} questions asked)
+```
+
+**Context:**
+```javascript
+{
+  event: "discussion.area_complete",
+  phase: "05-workflow-integration",
+  area_name: "Session lifecycle logging",
+  questions_asked: 8,
+  user_satisfied: true
+}
+```
+
+### 3. Context Creation
+
+**Level:** INFO (3)
+**When:** CONTEXT.md written with discussion results
+**Purpose:** Record context quality and coverage
+
+**Message Format:**
+```
+Context created for phase {phase}: {N} areas discussed, {M} decisions captured
+```
+
+**Context:**
+```javascript
+{
+  event: "discussion.complete",
+  phase: "05-workflow-integration",
+  areas_discussed: 3,
+  duration_ms: 847000,
+  decisions_captured: 12
+}
+```
+
+</logging>
+
 <success_criteria>
 - Gray areas identified through intelligent analysis
 - User chose which areas to discuss
