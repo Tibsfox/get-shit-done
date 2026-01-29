@@ -95,15 +95,15 @@ Plans:
 **Requirements**: INTEG-05
 **Success Criteria** (what must be TRUE):
   1. execute-phase.md includes logging for wave start/complete and aggregation
-  2. execute-plan.md includes logging for task execution and checkpoints
-  3. plan-phase.md includes logging for research and plan creation
-  4. All 12 workflow files have appropriate logging integration
+  2. plan-phase.md includes logging for research and plan creation
+  3. verify-work.md includes logging for UAT session lifecycle
+  4. All workflow command files have appropriate logging integration
   5. Wave-based parallel execution produces correlated logs
-**Plans**: 2 plans
+**Plans**: 2 plans in 1 wave
 
 Plans:
-- [ ] 05-01: Add logging to core workflows (execute-phase, execute-plan, plan-phase)
-- [ ] 05-02: Add logging to remaining workflows (verify, discuss, resume, etc.)
+- [ ] 05-01-PLAN.md — Add logging to core workflows (execute-phase, plan-phase) (Wave 1)
+- [ ] 05-02-PLAN.md — Add logging to remaining workflows (verify-work, debug, discuss, etc.) (Wave 1)
 
 ### Phase 6: Documentation
 **Goal**: Complete logging documentation including reference guide, settings integration, and troubleshooting guide.
@@ -132,7 +132,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Hook Integration | 3/3 | Complete | 2026-01-29 |
 | 3. Agent Instrumentation | 2/2 | Complete | 2026-01-29 |
 | 4. Verification Logging | 2/2 | Complete | 2026-01-29 |
-| 5. Workflow Integration | 0/2 | Not started | - |
+| 5. Workflow Integration | 0/2 | Planned | - |
 | 6. Documentation | 0/2 | Not started | - |
 
 ---
@@ -176,10 +176,10 @@ Phase 4: Verification Logging
            v
 Phase 5: Workflow Integration
     |
-    +-- workflows/execute-phase.md
-    +-- workflows/execute-plan.md
-    +-- workflows/plan-phase.md
-    +-- workflows/*.md (all others)
+    +-- commands/gsd/execute-phase.md [Wave 1]
+    +-- commands/gsd/plan-phase.md [Wave 1]
+    +-- commands/gsd/verify-work.md [Wave 1]
+    +-- commands/gsd/*.md (remaining) [Wave 1]
            |
            v
 Phase 6: Documentation
@@ -215,16 +215,15 @@ Phase 6: Documentation
 | agents/gsd-integration-checker.md | Modify | 3 |
 | agents/gsd-research-synthesizer.md | Modify | 3 |
 | get-shit-done/references/verification-logging.md | Create | 4 |
-| get-shit-done/workflows/execute-phase.md | Modify | 5 |
-| get-shit-done/workflows/execute-plan.md | Modify | 5 |
-| get-shit-done/workflows/plan-phase.md | Modify | 5 |
-| get-shit-done/workflows/verify-phase.md | Modify | 5 |
-| get-shit-done/workflows/verify-work.md | Modify | 5 |
-| get-shit-done/workflows/discuss-phase.md | Modify | 5 |
-| get-shit-done/workflows/discover-issues.md | Modify | 5 |
-| get-shit-done/workflows/complete-milestone.md | Modify | 5 |
-| get-shit-done/workflows/resume-project.md | Modify | 5 |
-| get-shit-done/workflows/map-codebase.md | Modify | 5 |
+| commands/gsd/execute-phase.md | Modify | 5 |
+| commands/gsd/plan-phase.md | Modify | 5 |
+| commands/gsd/verify-work.md | Modify | 5 |
+| commands/gsd/discuss-phase.md | Modify | 5 |
+| commands/gsd/debug.md | Modify | 5 |
+| commands/gsd/research-phase.md | Modify | 5 |
+| commands/gsd/resume-work.md | Modify | 5 |
+| commands/gsd/map-codebase.md | Modify | 5 |
+| commands/gsd/complete-milestone.md | Modify | 5 |
 | get-shit-done/references/logging.md | Create | 6 |
 | commands/gsd/settings.md | Modify | 6 |
 | CHANGELOG.md | Modify | 6 |
