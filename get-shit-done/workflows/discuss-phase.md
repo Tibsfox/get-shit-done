@@ -567,6 +567,23 @@ Task(
 ```
 
 **Handle plan-phase return:**
+
+**First:** Check for uncommitted changes left by deeply-nested Task agents.
+When the auto-advance chain runs discuss → plan → execute → executor (4 levels deep),
+git commits from the deepest level may not persist back to the working directory.
+The files are written correctly — only the commits are lost. This recovery step
+ensures no work is silently dropped.
+
+```bash
+DIRTY=$(git status --porcelain 2>/dev/null | wc -l)
+if [ "$DIRTY" -gt 0 ]; then
+  git add .planning/ src/ tests/ 2>/dev/null
+  git status --porcelain | grep "^??" | cut -c4- | xargs -r git add
+  git commit -m "fix(auto-advance): recover uncommitted changes from nested execution"
+fi
+```
+
+**Then route based on return status:**
 - **PHASE COMPLETE** → Full chain succeeded. Display:
   ```
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
