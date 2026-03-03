@@ -4,7 +4,7 @@ description: Migrate project MCP servers to global scope for subagent access
 allowed-tools:
   - Read
   - Write
-  - Bash
+  - AskUserQuestion
 ---
 
 <objective>
@@ -17,9 +17,7 @@ Help users migrate project-scoped MCP servers (`.mcp.json`) to global scope (`~/
 
 ## Step 1: Read Project MCP Configuration
 
-```bash
-cat .mcp.json 2>/dev/null
-```
+Use the **Read tool** to read `.mcp.json` in the project root.
 
 **If `.mcp.json` does not exist or is empty:**
 Report to the user:
@@ -28,10 +26,7 @@ Report to the user:
 >
 > This command migrates project-scoped MCP servers to global scope so GSD subagents can use them. If your MCP servers are already configured globally (`~/.claude/mcp.json`), no migration is needed.
 >
-> **To check your global MCP config:**
-> ```
-> cat ~/.claude/mcp.json
-> ```
+> **To check your global MCP config**, read `~/.claude/mcp.json`.
 
 **Stop here** — nothing to migrate.
 
@@ -55,9 +50,7 @@ Display to the user:
 
 ## Step 3: Read Global MCP Configuration
 
-```bash
-cat ~/.claude/mcp.json 2>/dev/null
-```
+Use the **Read tool** to read `~/.claude/mcp.json`.
 
 Parse existing global servers (if any). Identify:
 - **New servers:** In project config but NOT in global config (will be added)
@@ -85,17 +78,16 @@ Display the merge plan:
 
 **ALWAYS use the Write tool** to write `~/.claude/mcp.json` — never use heredoc or `cat <<EOF`.
 
-1. Start with the existing global config (or `{"mcpServers": {}}` if none exists)
-2. Merge in the servers marked ADD
-3. Apply user decisions for CONFLICT servers
-4. Write the merged config to `~/.claude/mcp.json`
-5. Preserve JSON formatting (2-space indent)
+1. **Back up** the existing global config: copy `~/.claude/mcp.json` to `~/.claude/mcp.json.pre-migrate` (skip if no existing file)
+2. Start with the existing global config (or `{"mcpServers": {}}` if none exists)
+3. Merge in the servers marked ADD
+4. Apply user decisions for CONFLICT servers
+5. Write the merged config to `~/.claude/mcp.json`
+6. Preserve JSON formatting (2-space indent)
 
 ## Step 5: Verify and Report
 
-```bash
-cat ~/.claude/mcp.json
-```
+Use the **Read tool** to read `~/.claude/mcp.json` and verify the merged content.
 
 Display the final result:
 

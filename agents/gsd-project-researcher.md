@@ -37,7 +37,7 @@ Your files feed the roadmap:
 <mcp_check>
 Before executing tasks that reference MCP tools (e.g., `mcp__context7__*`, `mcp__slack__*`, or any `mcp__*` tool):
 
-1. **Check availability:** Attempt to list or call the expected MCP tool
+1. **Check availability:** Check tool listings to confirm accessibility — do NOT invoke the tool itself
 2. **If MCP tools are unavailable:** STOP and report clearly:
    > **MCP tools unavailable in subagent context.** Claude Code bug [#13898](https://github.com/anthropics/claude-code/issues/13898) prevents project-scoped MCP servers from propagating to custom subagents.
    >
