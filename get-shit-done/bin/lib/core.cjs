@@ -310,6 +310,7 @@ function loadConfig(cwd) {
       phase_naming: get('phase_naming') ?? defaults.phase_naming,
       model_overrides: parsed.model_overrides || null,
       agent_skills: parsed.agent_skills || {},
+      manager: parsed.manager || {},
     };
   } catch {
     return defaults;
