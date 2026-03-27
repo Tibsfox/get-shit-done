@@ -941,6 +941,42 @@ function cmdStats(cwd, format, raw) {
   }
 }
 
+/**
+ * Pre-commit hook guard: reject staged .planning/ files when commit_docs is false.
+ * Usage: node gsd-tools.cjs check-commit
+ * Install as git pre-commit hook to prevent agents from bypassing commit_docs config.
+ * Exit 0 = allow commit, exit 1 = block commit.
+ */
+function cmdCheckCommit(cwd, raw) {
+  const config = loadConfig(cwd);
+
+  // If commit_docs is true, allow everything
+  if (config.commit_docs) {
+    output({ allowed: true, reason: 'commit_docs_enabled' }, raw, 'ok');
+    return;
+  }
+
+  // Check staged files for .planning/ paths
+  const result = execGit(cwd, ['diff', '--cached', '--name-only']);
+  if (result.exitCode !== 0) {
+    output({ allowed: true, reason: 'no_staged_files' }, raw, 'ok');
+    return;
+  }
+
+  const stagedFiles = result.stdout.trim().split('\n').filter(Boolean);
+  const planningFiles = stagedFiles.filter(f => f.startsWith('.planning/') || f.startsWith('.planning\\'));
+
+  if (planningFiles.length === 0) {
+    output({ allowed: true, reason: 'no_planning_files' }, raw, 'ok');
+    return;
+  }
+
+  // Block: .planning/ files staged but commit_docs is false
+  const msg = `GSD: commit_docs is false — rejecting ${planningFiles.length} staged .planning/ file(s). ` +
+    'Unstage with: git reset HEAD .planning/';
+  error(msg);
+}
+
 module.exports = {
   cmdGenerateSlug,
   cmdCurrentTimestamp,
@@ -957,4 +993,5 @@ module.exports = {
   cmdTodoMatchPhase,
   cmdScaffold,
   cmdStats,
+  cmdCheckCommit,
 };
