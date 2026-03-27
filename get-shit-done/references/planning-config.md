@@ -24,6 +24,7 @@ Configuration options for `.planning/` directory behavior.
 | `git.phase_branch_template` | `"gsd/phase-{phase}-{slug}"` | Branch template for phase strategy |
 | `git.milestone_branch_template` | `"gsd/{milestone}-{slug}"` | Branch template for milestone strategy |
 | `git.quick_branch_template` | `null` | Optional branch template for quick-task runs |
+| `response_language` | `null` | Language for user-facing questions and prompts across all phases/subagents (e.g. `"Portuguese"`, `"Japanese"`, `"Spanish"`). When set, all spawned agents include a directive to respond in this language. |
 </config_schema>
 
 <commit_docs_behavior>
