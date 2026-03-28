@@ -453,4 +453,29 @@ describe('init manager', () => {
     assert.strictEqual(output.manager_flags.plan, '--skip-research');
     assert.strictEqual(output.manager_flags.execute, '--interactive');
   });
+
+  test('output includes response_language when configured', () => {
+    writeState(tmpDir);
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Test' }]);
+
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify({ response_language: 'Japanese' })
+    );
+
+    const result = runGsdTools('init manager', tmpDir);
+    const output = JSON.parse(result.output);
+
+    assert.strictEqual(output.response_language, 'Japanese');
+  });
+
+  test('output omits response_language when not configured', () => {
+    writeState(tmpDir);
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Test' }]);
+
+    const result = runGsdTools('init manager', tmpDir);
+    const output = JSON.parse(result.output);
+
+    assert.strictEqual(output.response_language, undefined);
+  });
 });
