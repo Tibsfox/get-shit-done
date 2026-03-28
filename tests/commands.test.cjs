@@ -1288,6 +1288,69 @@ describe('commit command', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// cmdCheckCommit tests
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('check-commit command', () => {
+  const { createTempGitProject } = require('./helpers.cjs');
+  const { execSync } = require('child_process');
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempGitProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('allows commit when commit_docs is true', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify({ commit_docs: true })
+    );
+
+    const result = runGsdTools('check-commit', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.allowed, true);
+    assert.strictEqual(output.reason, 'commit_docs_enabled');
+  });
+
+  test('allows commit when commit_docs is false but no .planning/ files staged', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify({ commit_docs: false })
+    );
+    // Stage a non-planning file
+    fs.writeFileSync(path.join(tmpDir, 'README.md'), '# Hello');
+    execSync('git add README.md', { cwd: tmpDir, stdio: 'pipe' });
+
+    const result = runGsdTools('check-commit', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.allowed, true);
+    assert.strictEqual(output.reason, 'no_planning_files');
+  });
+
+  test('blocks commit when commit_docs is false and .planning/ files are staged', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify({ commit_docs: false })
+    );
+    // Stage a planning file
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'STATE.md'), '# State');
+    execSync('git add .planning/STATE.md', { cwd: tmpDir, stdio: 'pipe' });
+
+    const result = runGsdTools('check-commit', tmpDir);
+    assert.ok(!result.success, 'Should have failed');
+    assert.ok(result.error.includes('commit_docs is false'), `Error should mention commit_docs: ${result.error}`);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // cmdWebsearch tests (CMD-05)
 // ─────────────────────────────────────────────────────────────────────────────
 
