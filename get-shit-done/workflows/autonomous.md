@@ -1,6 +1,6 @@
 <purpose>
 
-Drive all remaining milestone phases autonomously. For each incomplete phase: discuss → plan → execute using Skill() flat invocations. Pauses only for explicit user decisions (grey area acceptance, blockers, validation requests). Re-reads ROADMAP.md after each phase to catch dynamically inserted phases.
+Drive milestone phases autonomously — all remaining phases, or a single phase via `--only N`. For each incomplete phase: discuss → plan → execute using Skill() flat invocations. Pauses only for explicit user decisions (grey area acceptance, blockers, validation requests). Re-reads ROADMAP.md after each phase to catch dynamically inserted phases.
 
 </purpose>
 
@@ -16,14 +16,22 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 ## 1. Initialize
 
-Parse `$ARGUMENTS` for `--from N` flag:
+Parse `$ARGUMENTS` for `--from N` and `--only N` flags:
 
 ```bash
 FROM_PHASE=""
 if echo "$ARGUMENTS" | grep -qE '\-\-from\s+[0-9]'; then
   FROM_PHASE=$(echo "$ARGUMENTS" | grep -oE '\-\-from\s+[0-9]+\.?[0-9]*' | awk '{print $2}')
 fi
+
+ONLY_PHASE=""
+if echo "$ARGUMENTS" | grep -qE '\-\-only\s+[0-9]'; then
+  ONLY_PHASE=$(echo "$ARGUMENTS" | grep -oE '\-\-only\s+[0-9]+\.?[0-9]*' | awk '{print $2}')
+  FROM_PHASE="$ONLY_PHASE"
+fi
 ```
+
+When `--only` is set, also set `FROM_PHASE` to the same value so existing filter logic applies.
 
 Bootstrap via milestone-level init:
 
@@ -48,7 +56,8 @@ Display startup banner:
  Phases: {phase_count} total, {completed_phases} complete
 ```
 
-If `FROM_PHASE` is set, display: `Starting from phase ${FROM_PHASE}`
+If `ONLY_PHASE` is set, display: `Single phase mode: Phase ${ONLY_PHASE}`
+Else if `FROM_PHASE` is set, display: `Starting from phase ${FROM_PHASE}`
 
 </step>
 
@@ -67,6 +76,16 @@ Parse the JSON `phases` array.
 **Filter to incomplete phases:** Keep only phases where `disk_status !== "complete"` OR `roadmap_complete === false`.
 
 **Apply `--from N` filter:** If `FROM_PHASE` was provided, additionally filter out phases where `number < FROM_PHASE` (use numeric comparison — handles decimal phases like "5.1").
+
+**Apply `--only N` filter:** If `ONLY_PHASE` was provided, additionally filter OUT phases where `number != ONLY_PHASE`. This means the phase list will contain exactly one phase (or zero if already complete).
+
+**If `ONLY_PHASE` is set and no phases remain** (phase already complete):
+
+```
+Phase ${ONLY_PHASE} is already complete. Nothing to do.
+```
+
+Exit cleanly.
 
 **Sort by `number`** in numeric ascending order.
 
@@ -686,7 +705,9 @@ Decisions captured: {count} across {area_count} areas
 
 ## 4. Iterate
 
-After each phase completes, re-read ROADMAP.md to catch phases inserted mid-execution (decimal phases like 5.1):
+**If `ONLY_PHASE` is set:** Do not iterate. Proceed directly to lifecycle step (which exits cleanly per single-phase mode).
+
+**Otherwise:** After each phase completes, re-read ROADMAP.md to catch phases inserted mid-execution (decimal phases like 5.1):
 
 ```bash
 ROADMAP=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap analyze)
@@ -715,7 +736,23 @@ If all phases complete, proceed to lifecycle step.
 
 ## 5. Lifecycle
 
-After all phases complete, run the milestone lifecycle sequence: audit → complete → cleanup.
+**If `ONLY_PHASE` is set:** Skip lifecycle. A single phase does not trigger audit/complete/cleanup. Display:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ GSD ► AUTONOMOUS ▸ PHASE ${ONLY_PHASE} COMPLETE ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ Phase ${ONLY_PHASE}: ${PHASE_NAME} — Done
+ Mode: Single phase (--only)
+
+ Lifecycle skipped — run /gsd:autonomous without --only
+ after all phases complete to trigger audit/complete/cleanup.
+```
+
+Exit cleanly.
+
+**Otherwise:** After all phases complete, run the milestone lifecycle sequence: audit → complete → cleanup.
 
 Display lifecycle transition banner:
 
@@ -852,7 +889,7 @@ When any phase operation fails or a blocker is detected, present 3 options via A
  Skipped: {list of skipped phases}
  Remaining: {list of remaining phases}
 
- Resume with: /gsd:autonomous --from {next_phase}
+ Resume with: /gsd:autonomous ${ONLY_PHASE ? "--only " + ONLY_PHASE : "--from " + next_phase}
 ```
 
 </step>
@@ -888,4 +925,9 @@ When any phase operation fails or a blocker is detected, present 3 options via A
 - [ ] Frontend phases get UI review audit after successful execution (step 3d.5) if UI-SPEC exists
 - [ ] UI phase and UI review respect workflow.ui_phase and workflow.ui_review config toggles
 - [ ] UI review is advisory (non-blocking) — phase proceeds to iterate regardless of score
+- [ ] `--only N` restricts execution to exactly one phase
+- [ ] `--only N` skips lifecycle step (audit/complete/cleanup)
+- [ ] `--only N` exits cleanly after single phase completes
+- [ ] `--only N` on already-complete phase exits with message
+- [ ] `--only N` handle_blocker resume message uses --only flag
 </success_criteria>
