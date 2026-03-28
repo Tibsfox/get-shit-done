@@ -13,6 +13,13 @@ Configuration options for `.planning/` directory behavior.
   "phase_branch_template": "gsd/phase-{phase}-{slug}",
   "milestone_branch_template": "gsd/{milestone}-{slug}",
   "quick_branch_template": null
+},
+"manager": {
+  "flags": {
+    "discuss": "",
+    "plan": "",
+    "execute": ""
+  }
 }
 ```
 
@@ -24,6 +31,9 @@ Configuration options for `.planning/` directory behavior.
 | `git.phase_branch_template` | `"gsd/phase-{phase}-{slug}"` | Branch template for phase strategy |
 | `git.milestone_branch_template` | `"gsd/{milestone}-{slug}"` | Branch template for milestone strategy |
 | `git.quick_branch_template` | `null` | Optional branch template for quick-task runs |
+| `manager.flags.discuss` | `""` | Flags passed to `/gsd:discuss-phase` when dispatched from manager (e.g. `"--auto --analyze"`) |
+| `manager.flags.plan` | `""` | Flags passed to plan workflow when dispatched from manager |
+| `manager.flags.execute` | `""` | Flags passed to execute workflow when dispatched from manager |
 </config_schema>
 
 <commit_docs_behavior>

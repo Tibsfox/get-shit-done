@@ -23,7 +23,14 @@ INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init manager)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_count`, `in_progress_count`, `phases`, `recommended_actions`, `all_complete`, `waiting_signal`.
+Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_count`, `in_progress_count`, `phases`, `recommended_actions`, `all_complete`, `waiting_signal`, `manager_flags`.
+
+`manager_flags` contains per-step passthrough flags from config:
+- `manager_flags.discuss` — appended to `/gsd:discuss-phase` args (e.g. `"--auto --analyze"`)
+- `manager_flags.plan` — appended to plan agent init command
+- `manager_flags.execute` — appended to execute agent init command
+
+These are empty strings by default. Set via: `gsd-tools config-set manager.flags.discuss "--auto --analyze"`
 
 **If error:** Display the error message and exit.
 
@@ -193,24 +200,24 @@ When the user selects a compound option:
 2. **Then run the inline discuss:**
 
 ```
-Skill(skill="gsd:discuss-phase", args="{PHASE_NUM}")
+Skill(skill="gsd:discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
 ```
 
 After discuss completes, loop back to dashboard step (background agents continue running).
 
 ### Discuss Phase N
 
-Discussion is interactive — needs user input. Run inline:
+Discussion is interactive — needs user input. Run inline with any configured flags:
 
 ```
-Skill(skill="gsd:discuss-phase", args="{PHASE_NUM}")
+Skill(skill="gsd:discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
 ```
 
 After discuss completes, loop back to dashboard step.
 
 ### Plan Phase N
 
-Planning runs autonomously. Spawn a background agent:
+Planning runs autonomously. Spawn a background agent with any configured flags:
 
 ```
 Task(
@@ -221,6 +228,7 @@ Task(
 Working directory: {cwd}
 Phase: {N} — {phase_name}
 Goal: {goal}
+Manager flags: {manager_flags.plan}
 
 Steps:
 1. Read the plan-phase workflow: cat ~/.claude/get-shit-done/workflows/plan-phase.md
@@ -230,6 +238,7 @@ Steps:
 5. Spawn a gsd-planner subagent via Task() to create the plans.
 6. If plan-checker is enabled, spawn a gsd-plan-checker subagent to verify.
 7. Commit plan files when complete.
+8. If manager flags are set, pass them to the relevant workflow invocations (e.g. Skill args).
 
 Important: You are running in the background. Do NOT use AskUserQuestion — make autonomous decisions based on project context. If you hit a blocker, write it to STATE.md as a blocker and stop. Do NOT silently work around permission or file access errors — let them fail so the manager can surface them with resolution hints."
 )
@@ -245,7 +254,7 @@ Loop back to dashboard step.
 
 ### Execute Phase N
 
-Execution runs autonomously. Spawn a background agent:
+Execution runs autonomously. Spawn a background agent with any configured flags:
 
 ```
 Task(
@@ -256,6 +265,7 @@ Task(
 Working directory: {cwd}
 Phase: {N} — {phase_name}
 Goal: {goal}
+Manager flags: {manager_flags.execute}
 
 Steps:
 1. Read the execute-phase workflow: cat ~/.claude/get-shit-done/workflows/execute-phase.md
@@ -265,6 +275,7 @@ Steps:
 5. After all waves complete, spawn a gsd-verifier subagent if verifier is enabled.
 6. Update ROADMAP.md and STATE.md with progress.
 7. Commit all changes.
+8. If manager flags are set, pass them to the relevant workflow invocations (e.g. --wave, --interactive).
 
 Important: You are running in the background. Do NOT use AskUserQuestion — make autonomous decisions. Use --no-verify on git commits. If you hit a permission error, file lock, or any access issue, do NOT work around it — let it fail and write the error to STATE.md as a blocker so the manager can surface it with resolution guidance."
 )
