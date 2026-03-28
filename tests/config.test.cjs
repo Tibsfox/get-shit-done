@@ -232,6 +232,16 @@ describe('config-set command', () => {
     assert.strictEqual(config.workflow.text_mode, true);
   });
 
+  test('sets workflow.use_worktrees to disable worktree isolation', () => {
+    writeConfig(tmpDir, {});
+
+    const result = runGsdTools('config-set workflow.use_worktrees false', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.workflow.use_worktrees, false);
+  });
+
   test('errors when no key path provided', () => {
     const result = runGsdTools('config-set', tmpDir);
     assert.strictEqual(result.success, false);

@@ -105,4 +105,20 @@ describe('execute-phase docs: user-facing wave flag', () => {
       'help.md should include wave-filter usage'
     );
   });
+
+  test('workflow supports use_worktrees config toggle', () => {
+    const content = fs.readFileSync(WORKFLOW_PATH, 'utf-8');
+    assert.ok(
+      content.includes('USE_WORKTREES'),
+      'workflow should reference USE_WORKTREES variable'
+    );
+    assert.ok(
+      content.includes('config-get workflow.use_worktrees'),
+      'workflow should read use_worktrees from config'
+    );
+    assert.ok(
+      content.includes('Sequential mode'),
+      'workflow should document sequential mode when worktrees disabled'
+    );
+  });
 });
