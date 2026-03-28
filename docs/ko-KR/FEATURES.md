@@ -736,7 +736,7 @@
 **요구사항.**
 - REQ-TODO-01: 현재 대화 컨텍스트에서 할 일을 캡처해야 합니다.
 - REQ-TODO-02: 할 일은 `.planning/todos/pending/`에 저장되어야 합니다.
-- REQ-TODO-03: 완료된 할 일은 `.planning/todos/done/`으로 이동해야 합니다.
+- REQ-TODO-03: 완료된 할 일은 `.planning/todos/completed/`으로 이동해야 합니다.
 - REQ-TODO-04: check-todos는 모든 보류 항목을 나열하고 하나를 선택하여 작업할 수 있어야 합니다.
 
 ---

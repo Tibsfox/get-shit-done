@@ -736,7 +736,7 @@
 **要件:**
 - REQ-TODO-01: システムは現在の会話コンテキストから Todo をキャプチャしなければならない
 - REQ-TODO-02: Todo は `.planning/todos/pending/` に保存されなければならない
-- REQ-TODO-03: 完了した Todo は `.planning/todos/done/` に移動されなければならない
+- REQ-TODO-03: 完了した Todo は `.planning/todos/completed/` に移動されなければならない
 - REQ-TODO-04: check-todos は保留中のすべてのアイテムを一覧表示し、作業するアイテムを選択できなければならない
 
 ---
