@@ -24,6 +24,7 @@ Configuration options for `.planning/` directory behavior.
 | `git.phase_branch_template` | `"gsd/phase-{phase}-{slug}"` | Branch template for phase strategy |
 | `git.milestone_branch_template` | `"gsd/{milestone}-{slug}"` | Branch template for milestone strategy |
 | `git.quick_branch_template` | `null` | Optional branch template for quick-task runs |
+| `workflow.subagent_timeout` | `300000` | Timeout in milliseconds for parallel subagent tasks (e.g. codebase mapping). Increase for large codebases or slower models. Default: 300000 (5 minutes). |
 </config_schema>
 
 <commit_docs_behavior>
