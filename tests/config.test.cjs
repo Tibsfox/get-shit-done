@@ -329,6 +329,27 @@ describe('config-get command', () => {
     });
   });
 
+  test('gets git.base_branch after it is set', () => {
+    runGsdTools('config-set git.base_branch master', tmpDir);
+    const result = runGsdTools('config-get git.base_branch', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output, 'master');
+  });
+
+  test('errors for git.base_branch when not explicitly set', () => {
+    // Default config from config-ensure-section does not include git.base_branch,
+    // so config-get should return "Key not found" — this triggers auto-detect
+    // fallback in the workflow (origin/HEAD detection).
+    const result = runGsdTools('config-get git.base_branch', tmpDir);
+    assert.strictEqual(result.success, false);
+    assert.ok(
+      result.error.includes('Key not found'),
+      `Expected "Key not found" in error: ${result.error}`
+    );
+  });
+
   test('errors when no key path provided', () => {
     const result = runGsdTools('config-get', tmpDir);
     assert.strictEqual(result.success, false);
