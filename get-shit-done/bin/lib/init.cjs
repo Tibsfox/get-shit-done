@@ -276,7 +276,7 @@ function cmdInitNewProject(cwd, raw) {
       '.ex', '.exs',           // Elixir
       '.clj',                  // Clojure
     ]);
-    const skipDirs = new Set(['node_modules', '.git', '.planning', '.claude', '__pycache__', 'target', 'dist', 'build']);
+    const skipDirs = new Set(['node_modules', '.git', '.planning', '.claude', '.codex', '__pycache__', 'target', 'dist', 'build']);
     function findCodeFiles(dir, depth) {
       if (depth > 3) return false;
       let entries;
@@ -956,9 +956,11 @@ function cmdInitManager(cwd, raw) {
   } catch { /* intentionally empty */ }
 
   // Compute recommended actions (execute > plan > discuss)
+  // Skip BACKLOG phases (999.x numbering) — they are parked ideas, not active work
   const recommendedActions = [];
   for (const phase of phases) {
     if (phase.disk_status === 'complete') continue;
+    if (/^999(?:\.|$)/.test(phase.number)) continue;
 
     if (phase.disk_status === 'planned' && phase.deps_satisfied) {
       recommendedActions.push({
