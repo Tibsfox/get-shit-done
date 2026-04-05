@@ -526,8 +526,12 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        # Amend merge commit with restored files if any changed
        if ! git diff --quiet .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || \
           [ -n "$DELETED_FILES" ]; then
-         git add .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || true
-         git commit --amend --no-edit 2>/dev/null || true
+         # Only amend the commit with .planning/ files if commit_docs is enabled (#1783)
+         COMMIT_DOCS=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get commit_docs 2>/dev/null || echo "true")
+         if [ "$COMMIT_DOCS" != "false" ]; then
+           git add .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || true
+           git commit --amend --no-edit 2>/dev/null || true
+         fi
        fi
 
        # Remove the worktree

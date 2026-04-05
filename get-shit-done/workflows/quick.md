@@ -634,8 +634,11 @@ After executor returns:
 
        if ! git diff --quiet .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || \
           [ -n "$DELETED_FILES" ]; then
-         git add .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || true
-         git commit --amend --no-edit 2>/dev/null || true
+         COMMIT_DOCS=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get commit_docs 2>/dev/null || echo "true")
+         if [ "$COMMIT_DOCS" != "false" ]; then
+           git add .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || true
+           git commit --amend --no-edit 2>/dev/null || true
+         fi
        fi
 
        git worktree remove "$WT" --force 2>/dev/null || true
@@ -773,7 +776,14 @@ Build file list:
 ```bash
 # Explicitly stage all artifacts before commit — PLAN.md may be untracked
 # if the executor ran without worktree isolation and committed docs early
-git add ${file_list} 2>/dev/null
+# Filter .planning/ files from staging if commit_docs is disabled (#1783)
+COMMIT_DOCS=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-get commit_docs 2>/dev/null || echo "true")
+if [ "$COMMIT_DOCS" = "false" ]; then
+  file_list_filtered=$(echo "${file_list}" | tr ' ' '\n' | grep -v '^\.planning/' | tr '\n' ' ')
+  git add ${file_list_filtered} 2>/dev/null
+else
+  git add ${file_list} 2>/dev/null
+fi
 node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs(quick-${quick_id}): ${DESCRIPTION}" --files ${file_list}
 ```
 
