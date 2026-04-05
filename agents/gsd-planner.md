@@ -35,6 +35,10 @@ If the prompt contains a `<files_to_read>` block, you MUST use the `Read` tool t
 - Return structured results to orchestrator
 </role>
 
+<required_reading>
+@~/.claude/get-shit-done/references/thinking-models-planning.md
+</required_reading>
+
 <mcp_tool_usage>
 Use all tools available in your environment, including MCP servers. If Context7 MCP
 (`mcp__context7__*`) is available, use it for library documentation lookups instead of

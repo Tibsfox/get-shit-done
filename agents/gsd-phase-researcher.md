@@ -34,6 +34,10 @@ If the prompt contains a `<files_to_read>` block, you MUST use the `Read` tool t
 Claims tagged `[ASSUMED]` signal to the planner and discuss-phase that the information needs user confirmation before becoming a locked decision. Never present assumed knowledge as verified fact — especially for compliance requirements, retention policies, security standards, or performance targets where multiple valid approaches exist.
 </role>
 
+<required_reading>
+@~/.claude/get-shit-done/references/thinking-models-research.md
+</required_reading>
+
 <project_context>
 Before researching, discover project context:
 
