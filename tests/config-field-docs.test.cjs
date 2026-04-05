@@ -123,4 +123,30 @@ describe('config-field-docs', () => {
       `Git fields missing from planning-config.md: ${missing.join(', ')}`
     );
   });
+
+  test('documents KNOWN_TOP_LEVEL internal fields not in CONFIG_DEFAULTS', () => {
+    // These fields are in KNOWN_TOP_LEVEL (core.cjs) and read by loadConfig()
+    // but not in CONFIG_DEFAULTS, so the CONFIG_DEFAULTS test doesn't cover them.
+    const internalFields = [
+      'model_overrides',
+      'agent_skills',
+    ];
+    const missing = internalFields.filter(f => !content.includes(`\`${f}\``));
+    assert.deepStrictEqual(
+      missing,
+      [],
+      `KNOWN_TOP_LEVEL internal fields missing from planning-config.md: ${missing.join(', ')}`
+    );
+  });
+
+  test('documents sub_repos field (CONFIG_DEFAULTS, no namespace form)', () => {
+    // sub_repos is in CONFIG_DEFAULTS but has no NAMESPACE_MAP entry
+    // (it uses a planning.sub_repos nested lookup but is documented as a
+    // top-level field). Verify it explicitly since the NAMESPACE_MAP path
+    // would silently skip it.
+    assert.ok(
+      content.includes('`sub_repos`'),
+      'planning-config.md must document the sub_repos field'
+    );
+  });
 });
