@@ -197,6 +197,17 @@ describe('install.js source correctness', () => {
     );
   });
 
+  test('gsd-workflow-guard.js has settings.json registration', () => {
+    assert.ok(
+      src.includes('hasWorkflowGuardHook'),
+      'install.js should check for existing workflow guard hook before registering'
+    );
+    assert.ok(
+      src.includes("'gsd-workflow-guard'") || src.includes('"gsd-workflow-guard"'),
+      'install.js should register gsd-workflow-guard in settings.json hooks'
+    );
+  });
+
   test('phantom gsd-check-update.sh is not in uninstall hook list', () => {
     const gsdHooksMatch = src.match(/const gsdHooks\s*=\s*\[([^\]]+)\]/);
     assert.ok(gsdHooksMatch, 'gsdHooks array should exist');

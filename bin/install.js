@@ -5630,6 +5630,30 @@ function install(isGlobal, runtime = 'claude') {
       console.log(`  ${green}✓${reset} Configured read-before-edit guard hook`);
     }
 
+    // Configure PreToolUse hook for workflow context guard (#1767)
+    // Advises when file edits happen outside a GSD workflow. Opt-in via
+    // hooks.workflow_guard: true in .planning/config.json (default: false).
+    const workflowGuardCommand = isGlobal
+      ? buildHookCommand(targetDir, 'gsd-workflow-guard.js')
+      : 'node ' + dirName + '/hooks/gsd-workflow-guard.js';
+    const hasWorkflowGuardHook = settings.hooks[preToolEvent].some(entry =>
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-workflow-guard'))
+    );
+
+    if (!hasWorkflowGuardHook) {
+      settings.hooks[preToolEvent].push({
+        matcher: 'Write|Edit',
+        hooks: [
+          {
+            type: 'command',
+            command: workflowGuardCommand,
+            timeout: 5
+          }
+        ]
+      });
+      console.log(`  ${green}✓${reset} Configured workflow context guard hook (opt-in via config)`);
+    }
+
     // Community hooks — registered on install but opt-in at runtime.
     // Each hook checks .planning/config.json for hooks.community: true
     // and exits silently (no-op) if not enabled. This lets users enable
