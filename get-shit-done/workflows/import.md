@@ -36,21 +36,32 @@ Store the extracted filepath for subsequent steps.
 </step>
 
 <step name="validate_filepath">
-Validate the file path using security best practices.
+Validate the file path using `validatePath()` from `security.cjs`. This is **mandatory** —
+path validation must succeed before any file operations proceed.
 
-**Path validation:**
+**Path validation (unconditional — must run first):**
 ```bash
-# Validate the path exists and is a file
+# MANDATORY: Call validatePath() before any file access
+node -e "
+  const { validatePath } = require('$HOME/.claude/get-shit-done/bin/lib/security.cjs');
+  const result = validatePath(process.argv[1], process.cwd(), { allowAbsolute: true });
+  if (!result.safe) {
+    console.error('Path validation failed: ' + result.error);
+    process.exit(1);
+  }
+  console.log('Validated: ' + result.resolved);
+" "{filepath}"
+```
+
+**If validation fails, abort immediately — do not proceed to file existence or any other step.**
+
+After validation passes, check existence:
+```bash
 if [ ! -f "{filepath}" ]; then
   echo "File not found: {filepath}"
   exit 1
 fi
 ```
-
-**Security considerations:**
-- Reject paths containing `..` segments to prevent directory traversal
-- Validate the resolved path is a regular file (not a symlink to a sensitive location)
-- Use `validatePath()` from `security.cjs` if available in the project
 
 Read the file content. Detect the format:
 - **Markdown** — contains `#` headers, lists, code blocks
@@ -113,12 +124,31 @@ section, decision, or requirement in the external plan, check:
 ```
 
 **For each conflict, ask the user to choose a resolution:**
-- **Keep existing** — discard the conflicting section from the external plan
+- **Keep existing** — discard the conflicting section from the external plan (no artifact update needed)
 - **Accept external** — replace the existing decision with the external plan's version
 - **Merge both** — combine both perspectives (user provides guidance)
-- **Skip this section** — exclude from import, revisit later
+- **Skip this section** — exclude from import, revisit later (no artifact update needed)
 
 Wait for the user to resolve **every** conflict before proceeding to conversion.
+
+**MANDATORY: Write conflict resolutions back to durable artifacts.**
+After all conflicts are resolved, update the source-of-truth files to reflect the decisions:
+
+- **Accept external** resolutions: overwrite the conflicting section in the relevant artifact
+  (PROJECT.md for decision conflicts, REQUIREMENTS.md for requirement conflicts, ROADMAP.md
+  for scope overlaps) with the external plan's version.
+- **Merge both** resolutions: write the merged content (as confirmed by the user) into the
+  relevant artifact, replacing the old section.
+- Resolutions that do not change existing artifacts (**Keep existing**, **Skip this section**)
+  require no artifact write-back.
+
+This ensures conflict resolutions are persisted — not just acknowledged in conversation.
+Report each artifact update:
+```
+Updated .planning/PROJECT.md — replaced decision: "{old_decision}" → "{new_decision}"
+Updated .planning/REQUIREMENTS.md — revised REQ-{id}: "{updated_text}"
+```
+
 If no conflicts are detected, report:
 ```
 No conflicts detected against existing project decisions.

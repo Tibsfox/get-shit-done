@@ -223,6 +223,122 @@ describe('/gsd-import workflow — plan-checker validation', () => {
   });
 });
 
+// ─── Workflow — path validation is unconditional ───────────────────────────
+
+describe('/gsd-import workflow — unconditional path validation', () => {
+  const content = fs.readFileSync(WORKFLOW_FILE, 'utf-8');
+
+  test('calls validatePath unconditionally (not advisory)', () => {
+    // Must NOT contain the old conditional phrasing
+    assert.ok(
+      !content.includes('if available'),
+      'workflow must not make validatePath conditional with "if available"'
+    );
+    // Must contain unconditional validatePath call
+    assert.ok(
+      content.includes('validatePath'),
+      'workflow must call validatePath'
+    );
+  });
+
+  test('path validation is marked as mandatory', () => {
+    const hasMandatory =
+      content.includes('mandatory') || content.includes('MANDATORY');
+    assert.ok(
+      hasMandatory,
+      'workflow must describe path validation as mandatory'
+    );
+  });
+
+  test('aborts if validation fails before any file operations', () => {
+    const hasAbort =
+      content.includes('abort immediately') ||
+      content.includes('do not proceed');
+    assert.ok(
+      hasAbort,
+      'workflow must abort if path validation fails'
+    );
+  });
+
+  test('validatePath runs before file existence check', () => {
+    const validateIdx = content.indexOf('validatePath');
+    const existenceIdx = content.indexOf('! -f');
+    assert.ok(
+      validateIdx > -1 && existenceIdx > -1 && validateIdx < existenceIdx,
+      'validatePath must appear before the file existence check'
+    );
+  });
+});
+
+// ─── Workflow — conflict resolution writes durable artifacts ───────────────
+
+describe('/gsd-import workflow — conflict resolution durability', () => {
+  const content = fs.readFileSync(WORKFLOW_FILE, 'utf-8');
+
+  test('Accept external resolution writes back to artifacts', () => {
+    // The workflow must instruct writing "Accept external" resolutions to artifacts
+    const hasWriteBack =
+      content.includes('Accept external') &&
+      (content.includes('overwrite the conflicting section') ||
+       content.includes('write') || content.includes('update'));
+    assert.ok(
+      hasWriteBack,
+      'Accept external resolutions must write back to durable artifacts'
+    );
+  });
+
+  test('Merge both resolution writes back to artifacts', () => {
+    const hasMergeWrite =
+      content.includes('Merge both') &&
+      (content.includes('write the merged content') ||
+       content.includes('replacing the old section'));
+    assert.ok(
+      hasMergeWrite,
+      'Merge both resolutions must write merged content to artifacts'
+    );
+  });
+
+  test('resolutions are persisted not just conversational', () => {
+    assert.ok(
+      content.includes('persisted') || content.includes('durable artifacts'),
+      'workflow must ensure conflict resolutions are persisted, not just conversational'
+    );
+  });
+
+  test('reports artifact updates after resolution', () => {
+    const hasReport =
+      content.includes('Updated .planning/PROJECT.md') ||
+      content.includes('Updated .planning/REQUIREMENTS.md') ||
+      content.includes('Report each artifact update');
+    assert.ok(
+      hasReport,
+      'workflow must report which artifacts were updated after conflict resolution'
+    );
+  });
+});
+
+// ─── Command — allowed-tools matches subagent pattern ──────────────────────
+
+describe('/gsd-import command — allowed-tools', () => {
+  const content = fs.readFileSync(COMMAND_FILE, 'utf-8');
+
+  test('allowed-tools lists Task for subagent spawning (not Agent)', () => {
+    // Extract the frontmatter section
+    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    assert.ok(frontmatterMatch, 'must have YAML frontmatter');
+    const frontmatter = frontmatterMatch[1];
+
+    assert.ok(
+      frontmatter.includes('Task'),
+      'allowed-tools must include Task for subagent spawning'
+    );
+    assert.ok(
+      !frontmatter.includes('Agent'),
+      'allowed-tools must not list Agent — use Task for subagent pattern'
+    );
+  });
+});
+
 // ─── Workflow — output format ────────────────────────────────────────────────
 
 describe('/gsd-import workflow — output format', () => {
