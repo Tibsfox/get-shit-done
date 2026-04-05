@@ -27,6 +27,7 @@ const VALID_CONFIG_KEYS = new Set([
   'planning.commit_docs', 'planning.search_gitignored',
   'workflow.subagent_timeout',
   'hooks.context_warnings',
+  'features.thinking_partner',
   'project_code', 'phase_naming',
   'manager.flags.discuss', 'manager.flags.plan', 'manager.flags.execute',
   'response_language',
