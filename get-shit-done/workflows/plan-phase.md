@@ -776,7 +776,38 @@ Task(
 
 Track `iteration_count` (starts at 1 after initial plan + check).
 
+Track `previous_issues` (initially empty). Before each revision, compute a fingerprint
+of the current blocking issues by normalizing each issue and sorting alphabetically.
+
+**Fingerprint normalization rules:**
+- Convert to lowercase
+- Collapse whitespace (multiple spaces/newlines to a single space)
+- Remove line number references (e.g., "line 42", "L42", ":42" become empty)
+- Remove file paths (strip tokens containing `/` or `\` — focus on the issue description, not location)
+- Trim leading/trailing whitespace from each issue
+- Sort issues alphabetically before comparing
+
 **If iteration_count < 3:**
+
+**Stall detection:** Compare the current issue fingerprint against `previous_issues`.
+If the fingerprint matches (same normalized issues appeared in the previous iteration),
+the revision loop has stalled — the planner cannot resolve these issues autonomously.
+
+If stalled:
+```
+⚠ Revision loop stalled — same issues persist after revision:
+
+{list the repeated issues}
+
+These issues likely need developer input or a requirements clarification.
+Consider:
+1. Updating REQUIREMENTS.md to address the ambiguity
+2. Running /gsd-discuss-phase to gather more context
+3. Using --force with /gsd-plan-phase to accept the current plan
+```
+Stop the loop (do NOT send to planner again). Treat as escalation gate.
+
+After the stall check (if not stalled), update `previous_issues` with the current fingerprint.
 
 Display: `Sending back to planner for revision... (iteration {N}/3)`
 
