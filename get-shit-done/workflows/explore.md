@@ -62,8 +62,7 @@ If yes, spawn a research agent:
 ```
 Task(
   prompt="Quick research: {specific_question}. Return 3-5 key findings, no more than 200 words.",
-  subagent_type="gsd-phase-researcher",
-  model="{resolved_model}"
+  subagent_type="gsd-phase-researcher"
 )
 ```
 

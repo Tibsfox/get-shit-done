@@ -7,7 +7,7 @@ allowed-tools:
   - Bash
   - Grep
   - Glob
-  - Agent
+  - Task
   - AskUserQuestion
 ---
 <objective>
