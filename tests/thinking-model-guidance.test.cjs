@@ -3,7 +3,7 @@
  *
  * Validates that all 5 thinking model reference files exist with required
  * sections, and that each of the 6 relevant agent files references its
- * thinking model guidance doc via required_reading blocks.
+ * thinking model guidance doc via @-reference lines.
  */
 
 const { describe, test } = require('node:test');
@@ -77,13 +77,10 @@ describe('agent files reference thinking model guidance', () => {
       const agentPath = path.join(AGENTS_DIR, `${agent}.md`);
       const content = fs.readFileSync(agentPath, 'utf-8');
 
+      const expectedRef = `@~/.claude/get-shit-done/references/${refFile}`;
       assert.ok(
-        content.includes('<required_reading>'),
-        `${agent}.md missing <required_reading> block`
-      );
-      assert.ok(
-        content.includes(refFile),
-        `${agent}.md does not reference ${refFile}`
+        content.includes(expectedRef),
+        `${agent}.md missing @-reference line: ${expectedRef}`
       );
     });
   }
