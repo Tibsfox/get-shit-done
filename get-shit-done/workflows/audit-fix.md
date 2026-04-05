@@ -14,7 +14,7 @@ after each fix, and commits atomically with finding IDs for traceability.
 Extract flags from the user's invocation:
 
 - `--max N` — maximum findings to fix (default: **5**)
-- `--severity high|medium|all` — minimum severity to process (default: **high**)
+- `--severity high|medium|all` — minimum severity to process (default: **medium**)
 - `--dry-run` — classify findings without fixing (shows classification table only)
 - `--source <audit>` — which audit to run (default: **audit-uat**)
 
@@ -112,11 +112,14 @@ node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "fix({scope}): resol
 ```
 The commit message **must** include the finding ID (e.g., F-01) for traceability.
 
-**d. If tests fail** — revert changes and mark finding as `fix-failed`:
+**d. If tests fail** — revert changes, mark finding as `fix-failed`, and **stop the pipeline**:
 ```bash
 git checkout -- . 2>/dev/null
 ```
-Log the failure reason and continue to the next finding.
+Log the failure reason and stop processing — do not continue to the next finding.
+A test failure indicates the codebase may be in an unexpected state, so the pipeline
+must halt to avoid cascading issues. Remaining auto-fixable findings will appear in the
+report as `not-attempted`.
 </step>
 
 <step name="report">
@@ -143,9 +146,10 @@ Present the final summary:
 </process>
 
 <success_criteria>
-- All auto-fixable findings attempted (up to --max)
+- Auto-fixable findings processed sequentially until --max reached or a test failure stops the pipeline
 - Tests pass after each committed fix (no broken commits)
 - Failed fixes are reverted cleanly (no partial changes left)
+- Pipeline stops after the first test failure (no cascading fixes)
 - Every commit message contains the finding ID
 - Manual-only findings are surfaced for developer attention
 - --dry-run produces a useful standalone classification table

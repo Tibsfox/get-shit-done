@@ -64,6 +64,15 @@ describe('AUDIT-FIX: command file', () => {
     );
   });
 
+  test('has argument-hint in frontmatter for /gsd-help discoverability', () => {
+    const content = fs.readFileSync(cmdPath, 'utf-8');
+    const frontmatter = content.split('---')[1] || '';
+    assert.ok(
+      frontmatter.includes('argument-hint:'),
+      'must have argument-hint in frontmatter for /gsd-help discoverability'
+    );
+  });
+
   test('references audit-fix.md workflow', () => {
     const content = fs.readFileSync(cmdPath, 'utf-8');
     assert.ok(
@@ -169,12 +178,12 @@ describe('AUDIT-FIX: all 4 flags documented', () => {
     );
   });
 
-  test('--severity flag documented in workflow with default high', () => {
+  test('--severity flag documented in workflow with default medium', () => {
     const content = fs.readFileSync(wfPath, 'utf-8');
     assert.ok(content.includes('--severity'), 'workflow must document --severity flag');
     assert.ok(
-      content.includes('high'),
-      'workflow must show default of high for --severity'
+      content.includes('medium'),
+      'workflow must show default of medium for --severity'
     );
   });
 
@@ -373,11 +382,11 @@ describe('AUDIT-FIX: revert on test failure', () => {
     );
   });
 
-  test('continues to next finding after failure', () => {
+  test('stops pipeline after first test failure', () => {
     const content = fs.readFileSync(wfPath, 'utf-8');
     assert.ok(
-      content.includes('continue') || content.includes('next finding'),
-      'must continue to next finding after a fix failure'
+      content.includes('stop') && content.includes('fix-failed'),
+      'must stop the pipeline after the first test failure'
     );
   });
 
