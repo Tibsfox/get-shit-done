@@ -52,16 +52,25 @@ describe('verification overrides reference (#1747)', () => {
     test('documents YAML frontmatter overrides block', () => {
       content = content || fs.readFileSync(refPath, 'utf-8');
       assert.ok(
-        content.includes('overrides:') && content.includes('criterion:') && content.includes('reason:'),
-        'should document the YAML frontmatter format with overrides, criterion, and reason fields'
+        content.includes('overrides:') && content.includes('must_have:') && content.includes('reason:'),
+        'should document the YAML frontmatter format with overrides, must_have, and reason fields'
       );
     });
 
-    test('documents approved_by field', () => {
+    test('documents accepted_by field', () => {
       content = content || fs.readFileSync(refPath, 'utf-8');
       assert.ok(
-        content.includes('approved_by'),
-        'should document the approved_by field'
+        content.includes('accepted_by'),
+        'should document the accepted_by field'
+      );
+    });
+
+    test('accepted_by is required (not optional)', () => {
+      content = content || fs.readFileSync(refPath, 'utf-8');
+      // The fields table should show accepted_by as required
+      assert.ok(
+        content.includes('`accepted_by` | Yes'),
+        'accepted_by should be marked as required in the fields table'
       );
     });
 
@@ -110,6 +119,74 @@ describe('verification overrides reference (#1747)', () => {
       assert.ok(
         content.includes('## When to Use'),
         'should contain a "When to Use" section'
+      );
+    });
+
+    // ── Abuse guardrails (When NOT to Use) ──────────────────────────────────
+
+    test('contains When NOT to Use section', () => {
+      content = content || fs.readFileSync(refPath, 'utf-8');
+      assert.ok(
+        content.includes('## When NOT to Use'),
+        'should contain a "When NOT to Use" section with abuse guardrails'
+      );
+    });
+
+    test('warns against overriding incomplete implementation', () => {
+      content = content || fs.readFileSync(refPath, 'utf-8');
+      assert.ok(
+        content.toLowerCase().includes('incomplete') || content.toLowerCase().includes('unfinished'),
+        'should warn against using overrides for incomplete work'
+      );
+    });
+
+    test('warns about security/correctness overrides needing human review', () => {
+      content = content || fs.readFileSync(refPath, 'utf-8');
+      assert.ok(
+        content.includes('human review'),
+        'should flag security/correctness overrides for human review'
+      );
+    });
+
+    test('warns against bulk overrides nullifying a phase', () => {
+      content = content || fs.readFileSync(refPath, 'utf-8');
+      assert.ok(
+        content.toLowerCase().includes('bulk') || content.toLowerCase().includes('majority'),
+        'should warn against bulk overrides that nullify a phase'
+      );
+    });
+
+    // ── Override lifecycle documentation ─────────────────────────────────────
+
+    test('contains Override Lifecycle section', () => {
+      content = content || fs.readFileSync(refPath, 'utf-8');
+      assert.ok(
+        content.includes('## Override Lifecycle'),
+        'should contain an "Override Lifecycle" section'
+      );
+    });
+
+    test('documents re-verification carryforward', () => {
+      content = content || fs.readFileSync(refPath, 'utf-8');
+      assert.ok(
+        content.toLowerCase().includes('carryforward') || content.toLowerCase().includes('carry forward') || content.toLowerCase().includes('persist'),
+        'should document that overrides persist across re-verify runs'
+      );
+    });
+
+    test('documents milestone surfacing', () => {
+      content = content || fs.readFileSync(refPath, 'utf-8');
+      assert.ok(
+        content.includes('gsd-audit-milestone'),
+        'should document that overrides appear in milestone audit reports'
+      );
+    });
+
+    test('documents overrides_applied frontmatter tracking', () => {
+      content = content || fs.readFileSync(refPath, 'utf-8');
+      assert.ok(
+        content.includes('overrides_applied'),
+        'should document the overrides_applied tracking field in VERIFICATION.md frontmatter'
       );
     });
   });

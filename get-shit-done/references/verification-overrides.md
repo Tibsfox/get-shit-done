@@ -12,6 +12,16 @@ Without overrides, the verifier reports these as FAIL even though the deviation 
 
 ---
 
+## When NOT to Use
+
+Overrides are not a workaround for incomplete work or a way to bypass verification:
+
+- **Incomplete implementation** — If the feature is simply unfinished, fix it rather than overriding. Overrides document *intentional* deviations, not missing work.
+- **Load-bearing security or correctness requirements** — Overrides on items that protect data integrity, authentication, authorization, or safety-critical behavior should be flagged for human review before acceptance. These items exist for a reason.
+- **Bulk overrides that nullify a phase** — If the majority of a phase's must-have items would need overrides, the phase plan itself likely needs revision. The verifier should warn when overrides exceed 50% of a phase's criteria.
+
+---
+
 ## Override Format
 
 Add an `overrides` block to the VERIFICATION.md frontmatter:
@@ -19,12 +29,12 @@ Add an `overrides` block to the VERIFICATION.md frontmatter:
 ```yaml
 ---
 overrides:
-  - criterion: "API endpoint returns paginated results"
+  - must_have: "API endpoint returns paginated results"
     reason: "Descoped to v2 — dataset too small to justify pagination overhead"
-    approved_by: "developer"
-  - criterion: "OAuth2 integration with Google"
+    accepted_by: "user"
+  - must_have: "OAuth2 integration with Google"
     reason: "Switched to passkey auth per updated security requirements"
-    approved_by: "developer"
+    accepted_by: "tech-lead"
 ---
 ```
 
@@ -32,9 +42,9 @@ overrides:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `criterion` | Yes | The verification criterion text (fuzzy-matched, not exact) |
+| `must_have` | Yes | The verification must-have text (fuzzy-matched, not exact) |
 | `reason` | Yes | Why the deviation is acceptable |
-| `approved_by` | No | Who approved (defaults to "developer") |
+| `accepted_by` | Yes | Who accepted the override (e.g., "user", "tech-lead") — required for audit traceability |
 
 ---
 
@@ -43,7 +53,7 @@ overrides:
 The verifier uses **fuzzy matching** to pair overrides with criteria:
 - Case-insensitive comparison
 - Ignores leading/trailing whitespace
-- Matches if the override criterion is a substring of the full criterion text
+- Matches if the override must_have is a substring of the full criterion text
 - Matches if 80%+ of words in the override appear in the criterion
 
 This avoids brittle exact-string matching when criteria wording varies slightly between PLAN.md and VERIFICATION.md.
@@ -63,13 +73,43 @@ When a criterion fails and NO override exists:
 
 ---
 
+## Override Lifecycle
+
+### Re-verification carryforward
+
+Existing overrides persist across re-verify runs. When a phase is re-verified (e.g., after additional work), previously accepted overrides remain in effect — the developer does not need to re-enter them. If the underlying criterion now passes naturally, the verifier marks it as `PASSED` and the override becomes inert but remains in the frontmatter for audit history.
+
+### Milestone surfacing
+
+Overrides appear in `/gsd-audit-milestone` reports. The audit summary includes a dedicated overrides section listing every override applied across the milestone, grouped by phase. This gives stakeholders visibility into which deviations were accepted and why.
+
+### Frontmatter tracking
+
+VERIFICATION.md frontmatter includes an `overrides_applied` count that tracks how many overrides are active for that phase:
+
+```yaml
+---
+overrides_applied: 2
+overrides:
+  - must_have: "..."
+    reason: "..."
+    accepted_by: "..."
+---
+```
+
+The verifier updates this count automatically during each verification run.
+
+---
+
 ## Example VERIFICATION.md
 
 ```markdown
 ---
+overrides_applied: 1
 overrides:
-  - criterion: "paginated API responses"
+  - must_have: "paginated API responses"
     reason: "Descoped — dataset under 100 items, pagination adds complexity without value"
+    accepted_by: "user"
 ---
 
 ## Phase 3: API Layer — Verification
