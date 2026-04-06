@@ -108,13 +108,14 @@ npm test 2>&1 | tail -20
 
 **c. If tests pass** — commit atomically:
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "fix({scope}): resolve {ID} — {description}" --files {changed_files}
+git add {changed_files}
+git commit -m "fix({scope}): resolve {ID} — {description}"
 ```
 The commit message **must** include the finding ID (e.g., F-01) for traceability.
 
 **d. If tests fail** — revert changes, mark finding as `fix-failed`, and **stop the pipeline**:
 ```bash
-git checkout -- . 2>/dev/null
+git checkout -- {changed_files} 2>/dev/null
 ```
 Log the failure reason and stop processing — do not continue to the next finding.
 A test failure indicates the codebase may be in an unexpected state, so the pipeline

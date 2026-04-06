@@ -1,7 +1,8 @@
 ---
+type: prompt
 name: gsd:audit-fix
 description: Autonomous audit-to-fix pipeline — find issues, classify, fix, test, commit
-argument-hint: "--source <audit|verify> [--severity <medium|high|all>] [--max N] [--dry-run]"
+argument-hint: "--source <audit-uat> [--severity <medium|high|all>] [--max N] [--dry-run]"
 allowed-tools:
   - Read
   - Write

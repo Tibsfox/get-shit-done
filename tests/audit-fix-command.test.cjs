@@ -73,6 +73,28 @@ describe('AUDIT-FIX: command file', () => {
     );
   });
 
+  test('has type: prompt in frontmatter', () => {
+    const content = fs.readFileSync(cmdPath, 'utf-8');
+    const frontmatter = content.split('---')[1] || '';
+    assert.ok(
+      frontmatter.includes('type: prompt'),
+      'must have type: prompt in frontmatter'
+    );
+  });
+
+  test('argument-hint reflects supported source values', () => {
+    const content = fs.readFileSync(cmdPath, 'utf-8');
+    const frontmatter = content.split('---')[1] || '';
+    assert.ok(
+      frontmatter.includes('--source <audit-uat>'),
+      'argument-hint must show --source <audit-uat> (the only currently supported value)'
+    );
+    assert.ok(
+      !frontmatter.includes('--source <audit|verify>'),
+      'argument-hint must not advertise unsupported verify source'
+    );
+  });
+
   test('references audit-fix.md workflow', () => {
     const content = fs.readFileSync(cmdPath, 'utf-8');
     assert.ok(
@@ -343,9 +365,9 @@ describe('AUDIT-FIX: test-then-commit pattern', () => {
     // Within the fix-loop step, test must come before commit
     const fixLoopStart = content.indexOf('fix-loop');
     const testIdx = content.indexOf('npm test', fixLoopStart);
-    const commitIdx = content.indexOf('gsd-tools.cjs" commit', fixLoopStart);
+    const commitIdx = content.indexOf('git commit', fixLoopStart);
     assert.ok(testIdx > -1, 'must have npm test in fix-loop');
-    assert.ok(commitIdx > -1, 'must have commit command in fix-loop');
+    assert.ok(commitIdx > -1, 'must have git commit in fix-loop');
     assert.ok(
       testIdx < commitIdx,
       'npm test must appear before commit in fix-loop (test-then-commit pattern)'
@@ -392,10 +414,10 @@ describe('AUDIT-FIX: revert on test failure', () => {
 
   test('test failure does not leave partial changes', () => {
     const content = fs.readFileSync(wfPath, 'utf-8');
-    // git checkout -- . is the revert mechanism
+    // git checkout scoped to changed files is the revert mechanism
     assert.ok(
-      content.includes('git checkout -- .'),
-      'must use git checkout -- . to clean partial changes on failure'
+      content.includes('git checkout -- {changed_files}'),
+      'must use git checkout -- {changed_files} to clean partial changes on failure'
     );
   });
 });
