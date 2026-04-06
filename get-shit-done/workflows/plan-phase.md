@@ -803,7 +803,7 @@ These issues likely need developer input or a requirements clarification.
 Consider:
 1. Updating REQUIREMENTS.md to address the ambiguity
 2. Running /gsd-discuss-phase to gather more context
-3. Using --force with /gsd-plan-phase to accept the current plan
+3. Using --skip-verify with /gsd-plan-phase to bypass the plan-checker and accept the current plan as-is
 ```
 Stop the loop (do NOT send to planner again). Treat as escalation gate.
 

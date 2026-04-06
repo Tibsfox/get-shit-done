@@ -53,8 +53,8 @@ describe('plan-phase stall detection', () => {
       'plan-phase.md should suggest running /gsd-discuss-phase'
     );
     assert.ok(
-      /--force/i.test(planPhaseContent),
-      'plan-phase.md should suggest using --force to accept current plan'
+      /--skip-verify/i.test(planPhaseContent),
+      'plan-phase.md should suggest using --skip-verify to bypass the plan-checker'
     );
   });
 
