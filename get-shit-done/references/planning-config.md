@@ -242,7 +242,7 @@ Set via `workflow.*` namespace in config.json (e.g., `"workflow": { "research": 
 | Key | Type | Default | Allowed Values | Description |
 |-----|------|---------|----------------|-------------|
 | `workflow.research` | boolean | `true` | `true`, `false` | Run research agent before planning |
-| `workflow.plan_check` | boolean | `true` | `true`, `false` | Run plan-checker agent to validate plans |
+| `workflow.plan_check` | boolean | `true` | `true`, `false` | Run plan-checker agent to validate plans. _Alias:_ `plan_checker` is the flat-key form used in `CONFIG_DEFAULTS`; `workflow.plan_check` is the canonical namespaced form. |
 | `workflow.verifier` | boolean | `true` | `true`, `false` | Run verifier agent after execution |
 | `workflow.nyquist_validation` | boolean | `true` | `true`, `false` | Enable Nyquist-inspired validation gates |
 | `workflow.auto_advance` | boolean | `false` | `true`, `false` | Auto-advance to next phase after completion |
@@ -279,6 +279,14 @@ These toggle external search integrations. Auto-detected at project creation whe
 | `brave_search` | boolean | `false` | `true`, `false` | Enable Brave web search for research agent (requires `BRAVE_API_KEY`) |
 | `firecrawl` | boolean | `false` | `true`, `false` | Enable Firecrawl page scraping (requires `FIRECRAWL_API_KEY`) |
 | `exa_search` | boolean | `false` | `true`, `false` | Enable Exa semantic search (requires `EXA_API_KEY`) |
+
+### Features Fields
+
+Set via `features.*` namespace (e.g., `"features": { "thinking_partner": true }`).
+
+| Key | Type | Default | Allowed Values | Description |
+|-----|------|---------|----------------|-------------|
+| `features.thinking_partner` | boolean | `false` | `true`, `false` | Enable conditional extended thinking at workflow decision points (used by discuss-phase and plan-phase for architectural tradeoff analysis) |
 
 ### Hook Fields
 

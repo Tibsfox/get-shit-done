@@ -2,7 +2,7 @@
  * Verify planning-config.md documents all config fields from source code.
  */
 
-const { describe, test } = require('node:test');
+const { describe, test, before } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
@@ -11,7 +11,11 @@ const REFERENCE_PATH = path.join(__dirname, '..', 'get-shit-done', 'references',
 const CORE_PATH = path.join(__dirname, '..', 'get-shit-done', 'bin', 'lib', 'core.cjs');
 
 describe('config-field-docs', () => {
-  const content = fs.readFileSync(REFERENCE_PATH, 'utf-8');
+  let content;
+
+  before(() => {
+    content = fs.readFileSync(REFERENCE_PATH, 'utf-8');
+  });
 
   test('contains Complete Field Reference section', () => {
     assert.ok(
@@ -147,6 +151,29 @@ describe('config-field-docs', () => {
     assert.ok(
       content.includes('`sub_repos`'),
       'planning-config.md must document the sub_repos field'
+    );
+  });
+
+  test('documents features.thinking_partner field', () => {
+    // features.thinking_partner is in VALID_CONFIG_KEYS (config.cjs) and
+    // used by discuss-phase.md and plan-phase.md for conditional extended
+    // thinking at workflow decision points.
+    assert.ok(
+      content.includes('`features.thinking_partner`'),
+      'planning-config.md must document the features.thinking_partner field'
+    );
+  });
+
+  test('documents plan_checker alias for workflow.plan_check', () => {
+    // plan_checker is the flat-key form in CONFIG_DEFAULTS; workflow.plan_check
+    // is the canonical namespaced form. The doc should mention the alias.
+    assert.ok(
+      content.includes('`workflow.plan_check`'),
+      'planning-config.md must document workflow.plan_check'
+    );
+    assert.ok(
+      content.includes('plan_checker'),
+      'planning-config.md must mention the plan_checker flat-key alias'
     );
   });
 });
