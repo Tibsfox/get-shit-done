@@ -6,6 +6,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.34.1] - 2026-04-06
+
+### Fixed
+- **npm publish catchup** — v1.33.0 and v1.34.0 were tagged but never published to npm; this release makes all changes available via `npx get-shit-done-cc@latest`
+- Removed npm v1.32.0 stuck notice from README
+
 ## [1.34.0] - 2026-04-06
 
 ### Added
@@ -1853,7 +1859,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - YOLO mode for autonomous execution
 - Interactive mode with checkpoints
 
-[Unreleased]: https://github.com/gsd-build/get-shit-done/compare/v1.30.0...HEAD
+[Unreleased]: https://github.com/gsd-build/get-shit-done/compare/v1.34.1...HEAD
+[1.34.1]: https://github.com/gsd-build/get-shit-done/releases/tag/v1.34.1
+[1.34.0]: https://github.com/gsd-build/get-shit-done/releases/tag/v1.34.0
+[1.33.0]: https://github.com/gsd-build/get-shit-done/releases/tag/v1.33.0
 [1.30.0]: https://github.com/gsd-build/get-shit-done/releases/tag/v1.30.0
 [1.29.0]: https://github.com/gsd-build/get-shit-done/releases/tag/v1.29.0
 [1.28.0]: https://github.com/gsd-build/get-shit-done/releases/tag/v1.28.0
