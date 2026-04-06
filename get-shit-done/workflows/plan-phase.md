@@ -790,6 +790,7 @@ of the current blocking issues by normalizing each issue and sorting alphabetica
 **If iteration_count < 3:**
 
 **Stall detection:** Compare the current issue fingerprint against `previous_issues`.
+Stall detection only runs when the checker has returned blocking issues; if the checker passes, the revision loop exits normally.
 If the fingerprint matches (same normalized issues appeared in the previous iteration),
 the revision loop has stalled — the planner cannot resolve these issues autonomously.
 
@@ -803,11 +804,11 @@ These issues likely need developer input or a requirements clarification.
 Consider:
 1. Updating REQUIREMENTS.md to address the ambiguity
 2. Running /gsd-discuss-phase to gather more context
-3. Using --skip-verify with /gsd-plan-phase to bypass the plan-checker and accept the current plan as-is
+3. Using --skip-verify with /gsd-plan-phase to bypass the plan-checker and accept the current plan as-is (note: --skip-verify bypasses the plan-checker for the full phase, not just the stalled plan)
 ```
 Stop the loop (do NOT send to planner again). Treat as escalation gate.
 
-After the stall check (if not stalled), update `previous_issues` with the current fingerprint.
+After the stall check (if not stalled), update `previous_issues` with the current fingerprint before spawning the planner for this revision.
 
 Display: `Sending back to planner for revision... (iteration {N}/3)`
 
