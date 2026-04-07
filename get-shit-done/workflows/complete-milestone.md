@@ -20,12 +20,14 @@ When a milestone completes:
 
 1. Extract full milestone details to `.planning/milestones/v[X.Y]-ROADMAP.md`
 2. Archive requirements to `.planning/milestones/v[X.Y]-REQUIREMENTS.md`
-3. Update ROADMAP.md — replace milestone details with one-line summary
-4. Delete REQUIREMENTS.md (fresh one for next milestone)
-5. Perform full PROJECT.md evolution review
-6. Offer to create next milestone inline
-7. Archive UI artifacts (`*-UI-SPEC.md`, `*-UI-REVIEW.md`) alongside other phase documents
-8. Clean up `.planning/ui-reviews/` screenshot files (binary assets, never archived)
+3. Commit archives (safety checkpoint before destructive operations)
+4. Overwrite ROADMAP.md in place — replace milestone details with one-line summary
+5. Remove REQUIREMENTS.md via `git rm` (fresh one for next milestone)
+6. Commit reorganized state
+7. Perform full PROJECT.md evolution review
+8. Offer to create next milestone inline
+9. Archive UI artifacts (`*-UI-SPEC.md`, `*-UI-REVIEW.md`) alongside other phase documents
+10. Clean up `.planning/ui-reviews/` screenshot files (binary assets, never archived)
 
 **Context Efficiency:** Archives keep ROADMAP.md constant-size and REQUIREMENTS.md milestone-scoped.
 
@@ -400,18 +402,38 @@ Verify: `✅ Phase directories archived to .planning/milestones/v[X.Y]-phases/`
 If "Skip": Phase directories remain in `.planning/phases/` as raw execution history. Use `/gsd-cleanup` later to archive retroactively.
 
 After archival, the AI still handles:
-- Reorganizing ROADMAP.md with milestone grouping (requires judgment)
+- Committing archives immediately (safety checkpoint before destructive ops)
+- Reorganizing ROADMAP.md in place with milestone grouping (requires judgment)
 - Full PROJECT.md evolution review (requires understanding)
-- Deleting original ROADMAP.md and REQUIREMENTS.md
+- Removing REQUIREMENTS.md via `git rm` (staged, recoverable deletion)
 - These are NOT fully delegated because they require AI interpretation of content
+
+</step>
+
+<step name="commit_archives">
+
+<!-- SAFETY: Commit archives BEFORE deleting originals. If the session
+     crashes between these steps, git history preserves the files.
+     See GPD research M4 CR-001 for the full analysis. -->
+
+After `milestone complete` has archived, commit the archive files immediately so that
+a recoverable checkpoint exists before any destructive operations:
+
+```bash
+node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "chore: archive v[X.Y] milestone files" --files .planning/milestones/v[X.Y]-ROADMAP.md .planning/milestones/v[X.Y]-REQUIREMENTS.md .planning/milestones/v[X.Y]-MILESTONE-AUDIT.md .planning/MILESTONES.md .planning/PROJECT.md .planning/STATE.md
+```
+
+Confirm: "Committed: chore: archive v[X.Y] milestone files"
 
 </step>
 
 <step name="reorganize_roadmap_and_delete_originals">
 
-After `milestone complete` has archived, reorganize ROADMAP.md with milestone groupings, then delete originals:
+Now that archives are safely committed, reorganize ROADMAP.md in place and remove
+REQUIREMENTS.md. Every destructive operation here is recoverable via git because the
+previous step committed a checkpoint.
 
-**Reorganize ROADMAP.md** — group completed milestone phases:
+**Reorganize ROADMAP.md in place** (overwrite, do not delete-then-create) — group completed milestone phases:
 
 ```markdown
 # Roadmap: [Project Name]
@@ -432,12 +454,17 @@ After `milestone complete` has archived, reorganize ROADMAP.md with milestone gr
 </details>
 ```
 
-**Then delete originals:**
+Write the new ROADMAP.md content directly over the existing file. Do NOT delete the file
+first — overwrite it so there is never a moment where it does not exist on disk.
+
+**Then remove REQUIREMENTS.md using git rm** (staged deletion, recoverable):
 
 ```bash
-rm .planning/ROADMAP.md
-rm .planning/REQUIREMENTS.md
+git rm .planning/REQUIREMENTS.md
 ```
+
+Using `git rm` instead of `rm` ensures the deletion is staged in the index and
+recoverable via `git checkout` if the session crashes before the next commit.
 
 </step>
 
@@ -686,14 +713,14 @@ git push origin v[X.Y]
 
 <step name="git_commit_milestone">
 
-Commit milestone completion.
+Commit the reorganized ROADMAP.md and deleted REQUIREMENTS.md. The archive files
+were already committed in the `commit_archives` step above.
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "chore: complete v[X.Y] milestone" --files .planning/milestones/v[X.Y]-ROADMAP.md .planning/milestones/v[X.Y]-REQUIREMENTS.md .planning/milestones/v[X.Y]-MILESTONE-AUDIT.md .planning/MILESTONES.md .planning/PROJECT.md .planning/STATE.md
-```
+node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "chore: complete v[X.Y] milestone — reorganize roadmap, remove old requirements" --files .planning/ROADMAP.md .planning/REQUIREMENTS.md
 ```
 
-Confirm: "Committed: chore: complete v[X.Y] milestone"
+Confirm: "Committed: chore: complete v[X.Y] milestone — reorganize roadmap, remove old requirements"
 
 </step>
 
@@ -762,10 +789,11 @@ Milestone completion is successful when:
 - [ ] ROADMAP.md reorganized with milestone grouping
 - [ ] Roadmap archive created (milestones/v[X.Y]-ROADMAP.md)
 - [ ] Requirements archive created (milestones/v[X.Y]-REQUIREMENTS.md)
-- [ ] REQUIREMENTS.md deleted (fresh for next milestone)
+- [ ] REQUIREMENTS.md removed via `git rm` (fresh for next milestone)
 - [ ] STATE.md updated with fresh project reference
 - [ ] Git tag created (v[X.Y])
-- [ ] Milestone commit made (includes archive files and deletion)
+- [ ] Archive commit made (archives + metadata, before destructive ops)
+- [ ] Milestone commit made (reorganized roadmap + requirements deletion)
 - [ ] Requirements completion checked against REQUIREMENTS.md traceability table
 - [ ] Incomplete requirements surfaced with proceed/audit/abort options
 - [ ] Known gaps recorded in MILESTONES.md if user proceeded with incomplete requirements
