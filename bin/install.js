@@ -4565,6 +4565,14 @@ function uninstall(isGlobal, runtime = 'claude') {
     }
   }
 
+  // 8. Remove gsd-file-manifest.json (#1908)
+  const manifestPath = path.join(targetDir, 'gsd-file-manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    fs.unlinkSync(manifestPath);
+    removedCount++;
+    console.log(`  ${green}✓${reset} Removed gsd-file-manifest.json`);
+  }
+
   if (removedCount === 0) {
     console.log(`  ${yellow}⚠${reset} No GSD files found to remove.`);
   }
