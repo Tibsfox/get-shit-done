@@ -4,7 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { escapeRegex, loadConfig, getMilestoneInfo, getMilestonePhaseFilter, normalizeMd, planningDir, planningPaths, output, error } = require('./core.cjs');
+const { escapeRegex, loadConfig, getMilestoneInfo, getMilestonePhaseFilter, normalizeMd, planningDir, planningPaths, output, error, _heldLocks } = require('./core.cjs');
 const { extractFrontmatter, reconstructFrontmatter } = require('./frontmatter.cjs');
 
 /** Shorthand — every state command needs this path */
@@ -805,6 +805,7 @@ function acquireStateLock(statePath) {
       const fd = fs.openSync(lockPath, fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_WRONLY);
       fs.writeSync(fd, String(process.pid));
       fs.closeSync(fd);
+      _heldLocks.add(lockPath);
       return lockPath;
     } catch (err) {
       if (err.code === 'EEXIST') {
@@ -833,6 +834,7 @@ function acquireStateLock(statePath) {
 
 function releaseStateLock(lockPath) {
   try { fs.unlinkSync(lockPath); } catch { /* lock already gone */ }
+  _heldLocks.delete(lockPath);
 }
 
 /**

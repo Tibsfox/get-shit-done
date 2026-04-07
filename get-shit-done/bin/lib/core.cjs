@@ -24,6 +24,14 @@ const WORKSTREAM_SESSION_ENV_KEYS = [
   'ZELLIJ_SESSION_NAME',
 ];
 
+// Track held lock files for cleanup on unexpected exit (e.g. process.exit in error())
+const _heldLocks = new Set();
+process.on('exit', () => {
+  for (const lockPath of _heldLocks) {
+    try { fs.unlinkSync(lockPath); } catch { /* ignore */ }
+  }
+});
+
 let cachedControllingTtyToken = null;
 let didProbeControllingTtyToken = false;
 
@@ -598,11 +606,13 @@ function withPlanningLock(cwd, fn) {
         acquired: new Date().toISOString(),
       }), { flag: 'wx' });
 
-      // Lock acquired — run the function
+      // Lock acquired — register for cleanup on unexpected exit
+      _heldLocks.add(lockPath);
       try {
         return fn();
       } finally {
         try { fs.unlinkSync(lockPath); } catch { /* already released */ }
+        _heldLocks.delete(lockPath);
       }
     } catch (err) {
       if (err.code === 'EEXIST') {
@@ -1530,4 +1540,5 @@ module.exports = {
   readSubdirectories,
   getAgentsDir,
   checkAgentsInstalled,
+  _heldLocks,
 };
