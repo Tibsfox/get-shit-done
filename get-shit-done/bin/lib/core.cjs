@@ -418,6 +418,29 @@ function isGitIgnored(cwd, targetPath) {
   }
 }
 
+// ─── Atomic file writes ─────────────────────────────────────────────────────
+
+/**
+ * Atomic file write: writes to a temp file then renames into place.
+ * Prevents truncated files when the process is killed mid-write.
+ *
+ * The rename(2) syscall is atomic on POSIX — the destination file is
+ * either the old content or the new content, never a partial write.
+ * On Windows, fs.renameSync is not guaranteed atomic but still avoids
+ * the most common truncation scenarios.
+ */
+function atomicWriteFileSync(filePath, content, encoding = 'utf-8') {
+  const tmpPath = filePath + '.tmp.' + process.pid;
+  try {
+    fs.writeFileSync(tmpPath, content, encoding);
+    fs.renameSync(tmpPath, filePath);
+  } catch (err) {
+    // Clean up the temp file on failure (best-effort)
+    try { fs.unlinkSync(tmpPath); } catch { /* already gone or never created */ }
+    throw err;
+  }
+}
+
 // ─── Markdown normalization ─────────────────────────────────────────────────
 
 /**
@@ -1490,6 +1513,7 @@ module.exports = {
   error,
   safeReadFile,
   loadConfig,
+  atomicWriteFileSync,
   isGitIgnored,
   execGit,
   normalizeMd,
