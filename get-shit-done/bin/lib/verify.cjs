@@ -898,6 +898,34 @@ function cmdValidateHealth(cwd, options, raw) {
     }
   }
 
+  // ─── W016: Orphan worktree detection (#P4.3) ──────────────────────────────
+  try {
+    const worktreeList = execGit(cwd, ['worktree', 'list', '--porcelain']);
+    const worktrees = worktreeList.split('\n\n').filter(Boolean);
+    for (const wt of worktrees) {
+      const lines = wt.split('\n');
+      const wtPath = (lines.find(l => l.startsWith('worktree ')) || '').replace('worktree ', '');
+      const branch = (lines.find(l => l.startsWith('branch ')) || '').replace('branch refs/heads/', '');
+      if (!wtPath || wtPath === cwd) continue; // skip main worktree
+      // Check if worktree directory still exists and has recent activity
+      try {
+        const stat = fs.statSync(wtPath);
+        const ageMs = Date.now() - stat.mtimeMs;
+        const ageHours = Math.round(ageMs / 3600000);
+        if (ageMs > 3600000) { // older than 1 hour
+          addIssue('warning', 'W016',
+            `Stale worktree: ${branch || 'detached'} at ${wtPath} (${ageHours}h old)`,
+            `Remove with: git worktree remove ${JSON.stringify(wtPath)} --force`);
+        }
+      } catch {
+        // Worktree path doesn't exist — definitely orphaned
+        addIssue('warning', 'W016',
+          `Orphan worktree: ${branch || 'detached'} — path no longer exists: ${wtPath}`,
+          `Clean up with: git worktree prune`);
+      }
+    }
+  } catch { /* git worktree not available or not a git repo — skip */ }
+
   // ─── Determine overall status ─────────────────────────────────────────────
   let status;
   if (errors.length > 0) {
