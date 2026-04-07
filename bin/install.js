@@ -5578,7 +5578,12 @@ function install(isGlobal, runtime = 'claude') {
       entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-check-update'))
     );
 
-    if (!hasGsdUpdateHook) {
+    // Guard: only register if the hook file was actually installed (#1754).
+    // When hooks/dist/ is missing from the npm package (as in v1.32.0), the
+    // copy step produces no files but the registration step ran unconditionally,
+    // causing "hook error" on every tool invocation.
+    const checkUpdateFile = path.join(targetDir, 'hooks', 'gsd-check-update.js');
+    if (!hasGsdUpdateHook && fs.existsSync(checkUpdateFile)) {
       settings.hooks.SessionStart.push({
         hooks: [
           {
@@ -5588,6 +5593,8 @@ function install(isGlobal, runtime = 'claude') {
         ]
       });
       console.log(`  ${green}✓${reset} Configured update check hook`);
+    } else if (!hasGsdUpdateHook && !fs.existsSync(checkUpdateFile)) {
+      console.warn(`  ${yellow}⚠${reset}  Skipped update check hook — gsd-check-update.js not found at target`);
     }
 
     // Configure post-tool hook for context window monitoring
@@ -5599,7 +5606,8 @@ function install(isGlobal, runtime = 'claude') {
       entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-context-monitor'))
     );
 
-    if (!hasContextMonitorHook) {
+    const contextMonitorFile = path.join(targetDir, 'hooks', 'gsd-context-monitor.js');
+    if (!hasContextMonitorHook && fs.existsSync(contextMonitorFile)) {
       settings.hooks[postToolEvent].push({
         matcher: 'Bash|Edit|Write|MultiEdit|Agent|Task',
         hooks: [
@@ -5611,6 +5619,8 @@ function install(isGlobal, runtime = 'claude') {
         ]
       });
       console.log(`  ${green}✓${reset} Configured context window monitor hook`);
+    } else if (!hasContextMonitorHook && !fs.existsSync(contextMonitorFile)) {
+      console.warn(`  ${yellow}⚠${reset}  Skipped context monitor hook — gsd-context-monitor.js not found at target`);
     } else {
       // Migrate existing context monitor hooks: add matcher and timeout if missing
       for (const entry of settings.hooks[postToolEvent]) {
@@ -5644,7 +5654,8 @@ function install(isGlobal, runtime = 'claude') {
       entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-prompt-guard'))
     );
 
-    if (!hasPromptGuardHook) {
+    const promptGuardFile = path.join(targetDir, 'hooks', 'gsd-prompt-guard.js');
+    if (!hasPromptGuardHook && fs.existsSync(promptGuardFile)) {
       settings.hooks[preToolEvent].push({
         matcher: 'Write|Edit',
         hooks: [
@@ -5656,6 +5667,8 @@ function install(isGlobal, runtime = 'claude') {
         ]
       });
       console.log(`  ${green}✓${reset} Configured prompt injection guard hook`);
+    } else if (!hasPromptGuardHook && !fs.existsSync(promptGuardFile)) {
+      console.warn(`  ${yellow}⚠${reset}  Skipped prompt guard hook — gsd-prompt-guard.js not found at target`);
     }
 
     // Configure PreToolUse hook for read-before-edit guidance (#1628)
@@ -5665,7 +5678,8 @@ function install(isGlobal, runtime = 'claude') {
       entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-read-guard'))
     );
 
-    if (!hasReadGuardHook) {
+    const readGuardFile = path.join(targetDir, 'hooks', 'gsd-read-guard.js');
+    if (!hasReadGuardHook && fs.existsSync(readGuardFile)) {
       settings.hooks[preToolEvent].push({
         matcher: 'Write|Edit',
         hooks: [
@@ -5677,6 +5691,8 @@ function install(isGlobal, runtime = 'claude') {
         ]
       });
       console.log(`  ${green}✓${reset} Configured read-before-edit guard hook`);
+    } else if (!hasReadGuardHook && !fs.existsSync(readGuardFile)) {
+      console.warn(`  ${yellow}⚠${reset}  Skipped read guard hook — gsd-read-guard.js not found at target`);
     }
 
     // Community hooks — registered on install but opt-in at runtime.
@@ -5694,7 +5710,8 @@ function install(isGlobal, runtime = 'claude') {
       entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-workflow-guard'))
     );
 
-    if (!hasWorkflowGuardHook) {
+    const workflowGuardFile = path.join(targetDir, 'hooks', 'gsd-workflow-guard.js');
+    if (!hasWorkflowGuardHook && fs.existsSync(workflowGuardFile)) {
       settings.hooks[preToolEvent].push({
         matcher: 'Write|Edit',
         hooks: [
@@ -5706,6 +5723,8 @@ function install(isGlobal, runtime = 'claude') {
         ]
       });
       console.log(`  ${green}✓${reset} Configured workflow guard hook (opt-in via hooks.workflow_guard)`);
+    } else if (!hasWorkflowGuardHook && !fs.existsSync(workflowGuardFile)) {
+      console.warn(`  ${yellow}⚠${reset}  Skipped workflow guard hook — gsd-workflow-guard.js not found at target`);
     }
 
     // Configure commit validation hook (Conventional Commits enforcement, opt-in)
