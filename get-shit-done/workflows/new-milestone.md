@@ -44,6 +44,25 @@ If the flag is absent, keep the current behavior of continuing phase numbering f
 - Wait for their response, then use AskUserQuestion to probe specifics
 - If user selects "Other" at any point to provide freeform input, ask follow-up as plain text — not another AskUserQuestion
 
+## 2.5. Surface Planted Seeds
+
+Check for seed files that may be relevant to the new milestone:
+
+```bash
+ls .planning/seeds/SEED-*.md 2>/dev/null || true
+```
+
+If seed files exist:
+1. Read each seed's **Trigger conditions** and **Idea** fields
+2. Compare trigger conditions against the milestone goals gathered in step 2
+3. Present matching seeds to the user:
+   - Show the idea summary and trigger condition
+   - Ask which seeds to include in this milestone's scope
+   - Seeds the user accepts should inform the requirements in step 9
+4. Seeds not selected remain for future milestones (do not delete them)
+
+If no seeds exist or none match, skip silently.
+
 ## 3. Determine Milestone Version
 
 - Parse last version from MILESTONES.md
