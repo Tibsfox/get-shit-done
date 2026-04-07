@@ -63,16 +63,18 @@ describe('common-bug-patterns.md reference', () => {
     );
   });
 
-  test('each category has at least one checklist item', () => {
+  test('each pattern category has at least one bold bullet item', () => {
     const content = fs.readFileSync(REFERENCE_PATH, 'utf-8');
-    const sections = content.split(/^## /m).slice(1); // skip preamble
-    assert.ok(sections.length >= 5, `Expected at least 5 sections, got ${sections.length}`);
+    // Only check sections inside <patterns> block, not <usage>
+    const patternsBlock = (content.split('<patterns>')[1] || '').split('</patterns>')[0];
+    const sections = patternsBlock.split(/^## /m).slice(1);
+    assert.ok(sections.length >= 5, `Expected at least 5 pattern sections, got ${sections.length}`);
     for (const section of sections) {
       const title = section.split('\n')[0].trim();
       const bullets = section.match(/^- \*\*/gm);
       assert.ok(
         bullets && bullets.length >= 1,
-        `Section "${title}" should have at least one "- **" bullet item`
+        `Pattern section "${title}" should have at least one "- **" bullet item`
       );
     }
   });
