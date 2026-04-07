@@ -323,6 +323,8 @@ Initial user testing showed demand for shape tools.
 
 <step name="reorganize_roadmap">
 
+**IMPORTANT: Preserve the `## Backlog` section.** If ROADMAP.md contains a `## Backlog` section with 999.x phase entries, extract it before rewriting and re-append it unchanged after the reorganized content.
+
 Update `.planning/ROADMAP.md` — group completed milestone phases:
 
 ```markdown
@@ -410,6 +412,13 @@ After archival, the AI still handles:
 <step name="reorganize_roadmap_and_delete_originals">
 
 After `milestone complete` has archived, reorganize ROADMAP.md with milestone groupings, then delete originals:
+
+**IMPORTANT: Preserve the `## Backlog` section verbatim.** Before rewriting ROADMAP.md:
+1. Extract the `## Backlog` section and all its phase entries (999.x items)
+2. After writing the reorganized ROADMAP, append the preserved Backlog section unchanged
+3. If no Backlog section exists, skip this step
+
+This ensures 999.x backlog items survive milestone transitions. The CLI preserves backlog phase directories (`cmdPhasesClear` filters `999.*`), but the ROADMAP content must also be preserved.
 
 **Reorganize ROADMAP.md** — group completed milestone phases:
 
