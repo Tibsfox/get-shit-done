@@ -821,8 +821,7 @@ function acquireStateLock(statePath) {
           return lockPath;
         }
         const jitter = Math.floor(Math.random() * 50);
-        const start = Date.now();
-        while (Date.now() - start < retryDelay + jitter) { /* busy wait */ }
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, retryDelay + jitter);
         continue;
       }
       return lockPath; // non-EEXIST error — proceed without lock
