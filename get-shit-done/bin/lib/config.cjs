@@ -361,17 +361,21 @@ function cmdConfigSet(cwd, keyPath, value, raw) {
   output(setConfigValueResult, raw, `${keyPath}=${parsedValue}`);
 }
 
-function cmdConfigGet(cwd, keyPath, raw) {
+function cmdConfigGet(cwd, keyPath, raw, defaultValue) {
   const configPath = path.join(planningRoot(cwd), 'config.json');
+  const hasDefault = defaultValue !== undefined;
 
   if (!keyPath) {
-    error('Usage: config-get <key.path>');
+    error('Usage: config-get <key.path> [--default <value>]');
   }
 
   let config = {};
   try {
     if (fs.existsSync(configPath)) {
       config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    } else if (hasDefault) {
+      output(defaultValue, raw, String(defaultValue));
+      return;
     } else {
       error('No config.json found at ' + configPath);
     }
@@ -385,12 +389,14 @@ function cmdConfigGet(cwd, keyPath, raw) {
   let current = config;
   for (const key of keys) {
     if (current === undefined || current === null || typeof current !== 'object') {
+      if (hasDefault) { output(defaultValue, raw, String(defaultValue)); return; }
       error(`Key not found: ${keyPath}`);
     }
     current = current[key];
   }
 
   if (current === undefined) {
+    if (hasDefault) { output(defaultValue, raw, String(defaultValue)); return; }
     error(`Key not found: ${keyPath}`);
   }
 

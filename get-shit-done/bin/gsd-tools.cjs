@@ -294,6 +294,17 @@ async function main() {
     args.splice(pickIdx, 2);
   }
 
+  // --default <value>: for config-get, return this value instead of erroring
+  // when the key is absent. Allows workflows to express optional config reads
+  // without defensive `2>/dev/null || true` boilerplate (#1893).
+  const defaultIdx = args.indexOf('--default');
+  let defaultValue = undefined;
+  if (defaultIdx !== -1) {
+    defaultValue = args[defaultIdx + 1];
+    if (defaultValue === undefined) defaultValue = '';
+    args.splice(defaultIdx, 2);
+  }
+
   const command = args[0];
 
   if (!command) {
@@ -346,7 +357,7 @@ async function main() {
       }
     };
     try {
-      await runCommand(command, args, cwd, raw);
+      await runCommand(command, args, cwd, raw, defaultValue);
       cleanup();
     } catch (e) {
       fs.writeSync = origWriteSync;
@@ -355,7 +366,7 @@ async function main() {
     return;
   }
 
-  await runCommand(command, args, cwd, raw);
+  await runCommand(command, args, cwd, raw, defaultValue);
 }
 
 /**
@@ -381,7 +392,7 @@ function extractField(obj, fieldPath) {
   return current;
 }
 
-async function runCommand(command, args, cwd, raw) {
+async function runCommand(command, args, cwd, raw, defaultValue) {
   switch (command) {
     case 'state': {
       const subcommand = args[1];
@@ -589,7 +600,7 @@ async function runCommand(command, args, cwd, raw) {
     }
 
     case 'config-get': {
-      config.cmdConfigGet(cwd, args[1], raw);
+      config.cmdConfigGet(cwd, args[1], raw, defaultValue);
       break;
     }
 
