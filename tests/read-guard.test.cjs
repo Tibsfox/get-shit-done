@@ -221,4 +221,30 @@ describe('gsd-read-guard hook', () => {
     assert.equal(result.exitCode, 0);
     assert.equal(result.stdout, '');
   });
+
+  // ─── Claude Code runtime skip (#1984) ─────────────────────────────────
+
+  test('skips advisory on Claude Code runtime (CLAUDE_SESSION_ID set)', () => {
+    const filePath = path.join(tmpDir, 'existing.js');
+    fs.writeFileSync(filePath, 'const x = 1;\n');
+
+    const input = JSON.stringify({
+      tool_name: 'Edit',
+      tool_input: { file_path: filePath, old_string: 'const x = 1;', new_string: 'const x = 2;' },
+    });
+
+    try {
+      const stdout = execFileSync(process.execPath, [HOOK_PATH], {
+        input,
+        encoding: 'utf-8',
+        timeout: 5000,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env, CLAUDE_SESSION_ID: 'test-session-123' },
+      });
+      assert.equal(stdout.trim(), '', 'should produce no output on Claude Code');
+    } catch (err) {
+      assert.equal(err.status, 0, 'should exit 0');
+      assert.equal((err.stdout || '').toString().trim(), '');
+    }
+  });
 });
