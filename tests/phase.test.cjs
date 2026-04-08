@@ -1906,9 +1906,9 @@ describe('normalizePhaseName', () => {
     assert.strictEqual(normalizePhaseName('12A.2'), '12A.2');
   });
 
-  test('uppercases letters', () => {
-    assert.strictEqual(normalizePhaseName('3a'), '03A');
-    assert.strictEqual(normalizePhaseName('12b.1'), '12B.1');
+  test('preserves letter case', () => {
+    assert.strictEqual(normalizePhaseName('3a'), '03a');
+    assert.strictEqual(normalizePhaseName('12b.1'), '12b.1');
   });
 
   test('handles multi-level decimal phases', () => {
