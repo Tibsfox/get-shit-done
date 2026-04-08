@@ -900,7 +900,10 @@ function normalizePhaseName(phase) {
   const match = stripped.match(/^(\d+)([A-Z])?((?:\.\d+)*)/i);
   if (match) {
     const padded = match[1].padStart(2, '0');
-    const letter = match[2] ? match[2].toUpperCase() : '';
+    // Preserve original case of letter suffix (#1962).
+    // Uppercasing causes directory/roadmap mismatches on case-sensitive filesystems
+    // (e.g., "16c" in ROADMAP.md → directory "16C-name" → progress can't match).
+    const letter = match[2] || '';
     const decimal = match[3] || '';
     return padded + letter + decimal;
   }
