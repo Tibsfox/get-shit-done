@@ -348,21 +348,24 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
        Run:
        ```bash
        ACTUAL_BASE=$(git merge-base HEAD {EXPECTED_BASE})
-       CURRENT_HEAD=$(git rev-parse HEAD)
        ```
 
        If `ACTUAL_BASE` != `{EXPECTED_BASE}` (i.e. the worktree branch was created from an older
-       base such as `main` instead of the feature branch HEAD), rebase onto the correct base:
+       base such as `main` instead of the feature branch HEAD), hard-reset to the correct base:
        ```bash
-       git rebase --onto {EXPECTED_BASE} $(git rev-parse --abbrev-ref HEAD~1 2>/dev/null || git rev-parse HEAD^) HEAD 2>/dev/null || true
-       # If rebase fails or is a no-op, reset the branch to start from the correct base:
-       git reset --soft {EXPECTED_BASE}
+       # Safe: this runs before any agent work, so no uncommitted changes to lose
+       git reset --hard {EXPECTED_BASE}
+       # Verify correction succeeded
+       if [ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ]; then
+         echo "ERROR: Could not correct worktree base — aborting to prevent data loss"
+         exit 1
+       fi
        ```
 
        If `ACTUAL_BASE` == `{EXPECTED_BASE}`: the branch base is correct, proceed immediately.
 
-       This check fixes a known issue on Windows where `EnterWorktree` creates branches from
-       `main` instead of the current feature branch HEAD.
+       This check fixes a known issue where `EnterWorktree` creates branches from
+       `main` instead of the current feature branch HEAD (affects all platforms).
        </worktree_branch_check>
 
        <parallel_execution>
