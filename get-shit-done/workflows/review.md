@@ -205,7 +205,7 @@ fi
 
 **Qwen Code:**
 ```bash
-qwen -p "$(cat /tmp/gsd-review-prompt-{phase}.md)" 2>/dev/null > /tmp/gsd-review-qwen-{phase}.md
+qwen "$(cat /tmp/gsd-review-prompt-{phase}.md)" 2>/dev/null > /tmp/gsd-review-qwen-{phase}.md
 if [ ! -s /tmp/gsd-review-qwen-{phase}.md ]; then
   echo "Qwen review failed or returned empty output." > /tmp/gsd-review-qwen-{phase}.md
 fi
@@ -213,7 +213,7 @@ fi
 
 **Cursor:**
 ```bash
-cursor --prompt "$(cat /tmp/gsd-review-prompt-{phase}.md)" 2>/dev/null > /tmp/gsd-review-cursor-{phase}.md
+cat /tmp/gsd-review-prompt-{phase}.md | cursor agent -p --mode ask --trust 2>/dev/null > /tmp/gsd-review-cursor-{phase}.md
 if [ ! -s /tmp/gsd-review-cursor-{phase}.md ]; then
   echo "Cursor review failed or returned empty output." > /tmp/gsd-review-cursor-{phase}.md
 fi
