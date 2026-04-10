@@ -113,10 +113,50 @@ process.stdin.on('end', () => {
       } catch (e) {}
     }
 
+    // GSD state fallback for middle slot when no active todo (#1989)
+    // Read STATE.md frontmatter for milestone/phase/status context
+    let gsdState = '';
+    if (!task) {
+      try {
+        // Walk up from cwd to find .planning/STATE.md
+        let searchDir = dir;
+        for (let i = 0; i < 5; i++) {
+          const statePath = path.join(searchDir, '.planning', 'STATE.md');
+          if (fs.existsSync(statePath)) {
+            const content = fs.readFileSync(statePath, 'utf8');
+            const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+            if (fmMatch) {
+              const fm = fmMatch[1];
+              const getField = (key) => { const m = fm.match(new RegExp(`^${key}:\\s*(.+)$`, 'm')); return m ? m[1].trim() : ''; };
+              const milestone = getField('milestone');
+              const milestoneName = getField('milestone_name');
+              const status = getField('status');
+              const phase = getField('current_phase_name') || getField('current_phase');
+              const pctMatch = fm.match(/percent:\s*(\d+)/);
+              const pct = pctMatch ? `${pctMatch[1]}%` : '';
+
+              const parts = [];
+              if (milestone && milestoneName) parts.push(`${milestone} ${milestoneName}`);
+              else if (milestone) parts.push(milestone);
+              if (status && status !== 'unknown') parts.push(status);
+              if (phase) parts.push(`Phase ${phase}`);
+              if (pct) parts.push(pct);
+              if (parts.length > 0) gsdState = parts.join(' · ');
+            }
+            break;
+          }
+          const parent = path.dirname(searchDir);
+          if (parent === searchDir) break;
+          searchDir = parent;
+        }
+      } catch { /* non-critical */ }
+    }
+
     // Output
     const dirname = path.basename(dir);
-    if (task) {
-      process.stdout.write(`${gsdUpdate}\x1b[2m${model}\x1b[0m │ \x1b[1m${task}\x1b[0m │ \x1b[2m${dirname}\x1b[0m${ctx}`);
+    const middle = task || gsdState;
+    if (middle) {
+      process.stdout.write(`${gsdUpdate}\x1b[2m${model}\x1b[0m │ \x1b[1m${middle}\x1b[0m │ \x1b[2m${dirname}\x1b[0m${ctx}`);
     } else {
       process.stdout.write(`${gsdUpdate}\x1b[2m${model}\x1b[0m │ \x1b[2m${dirname}\x1b[0m${ctx}`);
     }
