@@ -213,6 +213,16 @@ describe('config-set command', () => {
     assert.strictEqual(typeof config.workflow, 'object');
   });
 
+  test('accepts intel.enabled as a valid config key (#2047)', () => {
+    writeConfig(tmpDir, {});
+
+    const result = runGsdTools('config-set intel.enabled true', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.intel.enabled, true);
+  });
+
   test('rejects unknown config keys', () => {
     const result = runGsdTools('config-set workflow.nyquist_validation_enabled false', tmpDir);
     assert.strictEqual(result.success, false);

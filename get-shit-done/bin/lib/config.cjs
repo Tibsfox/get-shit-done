@@ -33,6 +33,7 @@ const VALID_CONFIG_KEYS = new Set([
   'context',
   'features.global_learnings',
   'learnings.max_inject',
+  'intel.enabled',
   'project_code', 'phase_naming',
   'manager.flags.discuss', 'manager.flags.plan', 'manager.flags.execute',
   'response_language',
