@@ -13,7 +13,7 @@ const response = await client.messages.create({
     {
       type: 'text',
       text: executorPrompt, // GSD workflow instructions — large, stable across requests
-      cache_control: { type: 'ephemeral', ttl: 3600 },
+      cache_control: { type: 'ephemeral', ttl: '1h' },
     },
   ],
   messages,
