@@ -57,7 +57,7 @@ system: [
   {
     type: 'text',
     text: executorPrompt,
-    cache_control: { type: 'ephemeral', ttl: 3600 },
+    cache_control: { type: 'ephemeral', ttl: '1h' },
   },
 ]
 ```
