@@ -6798,6 +6798,144 @@ function promptLocation(runtimes) {
 }
 
 /**
+ * Check whether any common shell rc file already contains a `PATH=` line
+ * whose HOME-expanded value places `globalBin` on PATH (#2620).
+ *
+ * Parses `~/.zshrc`, `~/.bashrc`, `~/.bash_profile`, `~/.profile` (or the
+ * override list in `rcFileNames`), matches `export PATH=` / bare `PATH=`
+ * lines, and substitutes the common HOME forms (`$HOME`, `${HOME}`, `~`)
+ * with `homeDir` before comparing each PATH segment against `globalBin`.
+ *
+ * Best-effort: any unreadable / malformed / non-existent rc file is ignored
+ * and the fallback is the caller's existing absolute-path suggestion. Only
+ * the `$HOME/…`, `${HOME}/…`, and `~/…` forms are handled — we do not try
+ * to fully parse bash syntax.
+ *
+ * @param {string} globalBin  Absolute path to npm's global bin directory.
+ * @param {string} homeDir    Absolute path used to substitute HOME / ~.
+ * @param {string[]} [rcFileNames]  Override the default rc file list.
+ * @returns {boolean}         true iff any rc file adds globalBin to PATH.
+ */
+function homePathCoveredByRc(globalBin, homeDir, rcFileNames) {
+  if (!globalBin || !homeDir) return false;
+  const path = require('path');
+  const fs = require('fs');
+
+  const normalise = (p) => {
+    if (!p) return '';
+    let n = p.replace(/[\\/]+$/g, '');
+    if (n === '') n = p.startsWith('/') ? '/' : p;
+    return n;
+  };
+
+  const targetAbs = normalise(path.resolve(globalBin));
+  const homeAbs = path.resolve(homeDir);
+  const files = rcFileNames || ['.zshrc', '.bashrc', '.bash_profile', '.profile'];
+
+  const expandHome = (segment) => {
+    let s = segment;
+    s = s.replace(/\$\{HOME\}/g, homeAbs);
+    s = s.replace(/\$HOME/g, homeAbs);
+    if (s.startsWith('~/') || s === '~') {
+      s = s === '~' ? homeAbs : path.join(homeAbs, s.slice(2));
+    }
+    return s;
+  };
+
+  // Match `PATH=…` (optionally prefixed with `export `). The RHS captures
+  // through end-of-line; surrounding quotes are stripped before splitting.
+  const assignRe = /^\s*(?:export\s+)?PATH\s*=\s*(.+?)\s*$/;
+
+  for (const name of files) {
+    const rcPath = path.join(homeAbs, name);
+    let content;
+    try {
+      content = fs.readFileSync(rcPath, 'utf8');
+    } catch {
+      continue;
+    }
+
+    for (const rawLine of content.split(/\r?\n/)) {
+      const line = rawLine.replace(/^\s+/, '');
+      if (line.startsWith('#')) continue;
+
+      const m = assignRe.exec(rawLine);
+      if (!m) continue;
+
+      let rhs = m[1];
+      if ((rhs.startsWith('"') && rhs.endsWith('"')) ||
+          (rhs.startsWith("'") && rhs.endsWith("'"))) {
+        rhs = rhs.slice(1, -1);
+      }
+
+      for (const segment of rhs.split(':')) {
+        if (!segment) continue;
+        const trimmed = segment.trim();
+        const expanded = expandHome(trimmed);
+        if (expanded.includes('$')) continue;
+        // Skip segments that are still relative after HOME expansion. A bare
+        // `bin` entry (or `./bin`, `node_modules/.bin`, etc.) depends on the
+        // shell's cwd at lookup time — it is NOT equivalent to `$HOME/bin`,
+        // so resolving against homeAbs would produce false positives.
+        if (!path.isAbsolute(expanded)) continue;
+        try {
+          const abs = normalise(path.resolve(expanded));
+          if (abs === targetAbs) return true;
+        } catch {
+          // ignore unresolvable segments
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Emit a PATH-export suggestion if globalBin is not already on PATH AND
+ * the user's shell rc files do not already cover it via a HOME-relative
+ * entry (#2620).
+ *
+ * Prints one of:
+ *   - nothing, if `globalBin` is already present on `process.env.PATH`
+ *   - a diagnostic "already covered via rc file" note, if an rc file has
+ *     `export PATH="$HOME/…/bin:$PATH"` (or equivalent) and the user just
+ *     needs to reopen their shell
+ *   - the absolute `echo 'export PATH="…:$PATH"' >> ~/.zshrc` suggestion,
+ *     if neither PATH nor any rc file covers globalBin
+ *
+ * Exported for tests; the installer calls this from finishInstall.
+ *
+ * @param {string} globalBin  Absolute path to npm's global bin directory.
+ * @param {string} homeDir    Absolute HOME path.
+ */
+function maybeSuggestPathExport(globalBin, homeDir) {
+  if (!globalBin || !homeDir) return;
+  const path = require('path');
+
+  const pathEnv = process.env.PATH || '';
+  const targetAbs = path.resolve(globalBin).replace(/[\\/]+$/g, '') || globalBin;
+  const onPath = pathEnv.split(path.delimiter).some((seg) => {
+    if (!seg) return false;
+    const abs = path.resolve(seg).replace(/[\\/]+$/g, '') || seg;
+    return abs === targetAbs;
+  });
+  if (onPath) return;
+
+  if (homePathCoveredByRc(globalBin, homeDir)) {
+    console.log(`  ${yellow}⚠${reset} ${bold}gsd-sdk${reset}'s directory is already on your PATH via an rc file entry — try reopening your shell (or ${cyan}source ~/.zshrc${reset}).`);
+    return;
+  }
+
+  console.log('');
+  console.log(`  ${yellow}⚠${reset} ${bold}${globalBin}${reset} is not on your PATH.`);
+  console.log(`    Add it with one of:`);
+  console.log(`      ${cyan}echo 'export PATH="${globalBin}:$PATH"' >> ~/.zshrc${reset}`);
+  console.log(`      ${cyan}echo 'export PATH="${globalBin}:$PATH"' >> ~/.bashrc${reset}`);
+  console.log('');
+}
+
+/**
  * Verify the prebuilt SDK dist is present and the gsd-sdk shim is wired up.
  *
  * As of fix/2441-sdk-decouple, sdk/dist/ is shipped prebuilt inside the
@@ -6855,6 +6993,21 @@ function installSdkIfNeeded() {
   }
 
   console.log(`  ${green}✓${reset} GSD SDK ready (sdk/dist/cli.js)`);
+
+  // #2620: warn if npm's global bin is not on PATH, suppressing the
+  // absolute-path suggestion when the user's rc already covers it via
+  // a HOME-relative entry (e.g. `export PATH="$HOME/.npm-global/bin:$PATH"`).
+  try {
+    const { execSync } = require('child_process');
+    const npmPrefix = execSync('npm prefix -g', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    if (npmPrefix) {
+      // On Windows npm prefix IS the bin dir; on POSIX it's `${prefix}/bin`.
+      const globalBin = process.platform === 'win32' ? npmPrefix : path.join(npmPrefix, 'bin');
+      maybeSuggestPathExport(globalBin, os.homedir());
+    }
+  } catch {
+    // npm not available / exec failed — silently skip the PATH advice.
+  }
 }
 
 /**
@@ -6972,6 +7125,8 @@ if (process.env.GSD_TEST_MODE) {
     preserveUserArtifacts,
     restoreUserArtifacts,
     finishInstall,
+    homePathCoveredByRc,
+    maybeSuggestPathExport,
   };
 } else {
 
