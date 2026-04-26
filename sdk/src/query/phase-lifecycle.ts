@@ -85,6 +85,12 @@ function generateSlugInternal(text: string): string {
  * If no `</details>` blocks exist, replaces in the entire content.
  * Otherwise, only replaces in content after the last `</details>` close tag.
  *
+ * Edge case: when the active milestone is itself wrapped in a `<details>` block
+ * (e.g. collapsed before it is fully shipped), the last `</details>` belongs to
+ * the active milestone and the `after` slice is empty. In that case the function
+ * falls back to searching the full content with all complete `<details>` blocks
+ * stripped, so archived milestones are never touched.
+ *
  * @param content - Full ROADMAP.md content
  * @param pattern - Regex or string pattern to match
  * @param replacement - Replacement string
@@ -102,7 +108,40 @@ export function replaceInCurrentMilestone(
   const offset = lastDetailsClose + '</details>'.length;
   const before = content.slice(0, offset);
   const after = content.slice(offset);
-  return before + after.replace(pattern, replacement);
+
+  // Fast path: the current milestone is not inside a <details> block — the
+  // pattern lives in the plain text after the last </details>.
+  if (after.trim().length > 0) {
+    return before + after.replace(pattern, replacement);
+  }
+
+  // Slow path: the active milestone is inside the last <details> block.
+  // Strip every complete <details>…</details> block except the last one, then
+  // apply the replacement inside that last block while leaving the stripped
+  // (archived) blocks untouched.
+  //
+  // Strategy:
+  //   1. Collect all complete <details>…</details> spans.
+  //   2. Replace only inside the LAST span; leave earlier spans unchanged.
+  const detailsBlockRe = /<details>[\s\S]*?<\/details>/gi;
+  const spans: { start: number; end: number; text: string }[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = detailsBlockRe.exec(content)) !== null) {
+    spans.push({ start: m.index, end: m.index + m[0].length, text: m[0] });
+  }
+
+  if (spans.length === 0) {
+    // No complete blocks found — fall back to full-content replace.
+    return content.replace(pattern, replacement);
+  }
+
+  const lastSpan = spans[spans.length - 1];
+  const updatedLastBlock = lastSpan.text.replace(pattern, replacement);
+  return (
+    content.slice(0, lastSpan.start) +
+    updatedLastBlock +
+    content.slice(lastSpan.end)
+  );
 }
 
 // ─── readModifyWriteRoadmapMd ───────────────────────────────────────────
